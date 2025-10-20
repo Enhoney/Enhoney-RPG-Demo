@@ -26,6 +26,7 @@
 #include "Net/UnrealNetwork.h"
 
 #include "TaskWidgetController.h"
+#include "CommonAlgorithmLibrary.h"
 
 
 AEnhoneyPlayerController::AEnhoneyPlayerController()
@@ -94,6 +95,7 @@ void AEnhoneyPlayerController::SetupInputComponent()
 		EnhoneyInputComponent->BindAction(OpenCharacterMenuAction, ETriggerEvent::Triggered, this, &AEnhoneyPlayerController::OpenCharacterMenu);
 		EnhoneyInputComponent->BindAction(OpenTaskPanelAction, ETriggerEvent::Completed, this, &AEnhoneyPlayerController::ShowOrHidePlayerTaskPanel);
 		EnhoneyInputComponent->BindAction(SwitchEquippedWeaponAction, ETriggerEvent::Completed, this, &AEnhoneyPlayerController::SwitchWeapon);
+		EnhoneyInputComponent->BindAction(OpenGamePasueMenuAction, ETriggerEvent::Completed, this, &AEnhoneyPlayerController::OpenPauseMenu);
 
 		EnhoneyInputComponent->BindAction(TargetEnemyLockingAction, ETriggerEvent::Triggered, this, &AEnhoneyPlayerController::EnemyTargetLocking);
 
@@ -216,6 +218,16 @@ void AEnhoneyPlayerController::ShowOrHidePlayerTaskPanel()
 		{
 			TaskWidgetController->ShowOrHidePlayerTaskPanel();
 		}
+	}
+}
+
+void AEnhoneyPlayerController::OpenPauseMenu()
+{
+	// 找到PlayingWidgetController
+	UPlayingWidgetController* PlayingWidgetController;
+	if (UCommonAlgorithmLibrary::GetPlayingWidgetControllerByCharacter(GetCharacter(), PlayingWidgetController))
+	{
+		PlayingWidgetController->OpenPauseMenu();
 	}
 }
 

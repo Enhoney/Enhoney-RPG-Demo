@@ -20,6 +20,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FShowGetItemOnUISignature, FInventor
 // 经验值改变
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterExpChangedSignature, float, NewExpValue, float, NewExpNeededForLevelup);
 
+// 暂定菜单打开或者关闭
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGamePauseOpenOrCloseSignature, bool, bOpen);
+
 /**
  * 
  */
@@ -43,6 +46,18 @@ public:
 	// 设置PlayerTaskWidgetController中的PlayerTaskWidget
 	UFUNCTION(BlueprintCallable)
 	void SetPlayerTaskWidgetOnController(UPlayerTaskPanelWidget* InPlayerTaskWidget);
+
+	// 打开暂停菜单
+	void OpenPauseMenu();
+
+	// 关闭暂停菜单继续游戏
+	UFUNCTION(BlueprintCallable)
+	void ClosePuaseMenu();
+
+	// 退出游戏
+	UFUNCTION(BlueprintCallable)
+	void QuitGame();
+
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -80,4 +95,8 @@ public:
 	// 获得物品弹窗
 	UPROPERTY(BlueprintAssignable)
 	FShowGetItemOnUISignature OnShowGetItemOnUIDelegate;
+
+	// 暂停菜单打开或者关闭
+	UPROPERTY(BlueprintAssignable)
+	FGamePauseOpenOrCloseSignature OnGamePauseDelegate;
 };

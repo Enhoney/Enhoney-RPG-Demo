@@ -58,12 +58,14 @@ private:
 	void Look(const FInputActionValue& InputActionValue);
 	void Jump();
 	void StopJumping();
-
+	// 打开角色菜单
 	void OpenCharacterMenu();
 	// 切武器
 	void SwitchWeapon();
-
+	// 打开或者隐藏任务菜单
 	void ShowOrHidePlayerTaskPanel();
+	// 打开暂停菜单
+	void OpenPauseMenu();
 
 	/** Abilities*/
 	// 锁敌
@@ -106,6 +108,9 @@ private:
 	// 切换装备的武器
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Common")
 	TObjectPtr<UInputAction> SwitchEquippedWeaponAction;
+	// 打开暂停菜单
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Common")
+	TObjectPtr<UInputAction> OpenGamePasueMenuAction;
 
 	// 激活锁敌技能
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Ability")

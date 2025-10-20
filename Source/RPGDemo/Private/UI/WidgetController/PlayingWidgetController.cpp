@@ -14,6 +14,7 @@
 #include "TaskWidgetController.h"
 
 #include "GameplayEffectTypes.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void UPlayingWidgetController::BroadcastInitialValue()
 {
@@ -148,5 +149,42 @@ void UPlayingWidgetController::SetPlayerTaskWidgetOnController(UPlayerTaskPanelW
 			TaskWidgetController->SetPlayerTaskWidget(InPlayerTaskWidget);
 		}
 	}
+}
+
+void UPlayingWidgetController::OpenPauseMenu()
+{
+	if (PlayerController)
+	{
+		// 如果是单机游戏，就暂停
+		PlayerController->SetPause(true);
+		// 输入仅对UI有效
+		PlayerController->SetInputMode(FInputModeUIOnly());
+		// 显示鼠标光标
+		PlayerController->SetShowMouseCursor(true);
+	}
+	
+	// 显示暂停菜单
+	OnGamePauseDelegate.Broadcast(true);
+}
+
+void UPlayingWidgetController::ClosePuaseMenu()
+{
+	if (PlayerController)
+	{
+		// 如果是单机游戏，就取消暂停
+		PlayerController->SetPause(false);
+		// 输入对UI和游戏有效
+		PlayerController->SetInputMode(FInputModeGameAndUI());
+		// 隐藏鼠标光标
+		PlayerController->SetShowMouseCursor(false);
+	}
+	
+	// 隐藏暂停菜单
+	OnGamePauseDelegate.Broadcast(false);
+}
+
+void UPlayingWidgetController::QuitGame()
+{
+	UKismetSystemLibrary::QuitGame(PlayerController, PlayerController, EQuitPreference::Quit, false);
 }
 
