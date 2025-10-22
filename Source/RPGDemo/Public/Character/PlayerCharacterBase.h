@@ -194,7 +194,7 @@ protected:
 	bool bTargetingEnemy = false;
 
 	// 当前锁定的敌人
-	UPROPERTY(BlueprintReadOnly, Category = "EnemyLocking")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "EnemyLocking")
 	TWeakObjectPtr<AActor> PlayerTargetEnemy = nullptr;
 
 	TSharedPtr<FDelegateHandle> EnemyLockDelegateHandle;

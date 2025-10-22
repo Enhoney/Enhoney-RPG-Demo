@@ -126,7 +126,10 @@ void APlayerCharacterBase::FindNewNearstEnemyToLock()
 		if (PlayerTargetEnemy.IsValid())
 		{
 			// 隐藏锁定图标，移除原来的绑定
-			IEnemyInterface::Execute_QuitTargetLocking(PlayerTargetEnemy.Get());
+			if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+			{
+				IEnemyInterface::Execute_SetAsTargetLocking(PlayerTargetEnemy.Get());
+			}
 			Cast<IEnemyInterface>(PlayerTargetEnemy.Get())->GetCancelEnemyLockOnEnemyDiedDelegate()->Remove(*EnemyLockDelegateHandle);
 			EnemyLockDelegateHandle = nullptr;
 		}
@@ -134,7 +137,10 @@ void APlayerCharacterBase::FindNewNearstEnemyToLock()
 		if (PlayerTargetEnemy.IsValid())
 		{
 			// 显示锁定图标，绑定代理
-			IEnemyInterface::Execute_SetAsTargetLocking(PlayerTargetEnemy.Get());
+			if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+			{
+				IEnemyInterface::Execute_QuitTargetLocking(PlayerTargetEnemy.Get());
+			}
 			EnemyLockDelegateHandle = MakeShared<FDelegateHandle>(Cast<IEnemyInterface>(PlayerTargetEnemy)->GetCancelEnemyLockOnEnemyDiedDelegate()->AddUObject(this, &APlayerCharacterBase::FindNewNearstEnemyToLock));
 		}
 	}
@@ -156,6 +162,11 @@ void APlayerCharacterBase::InitPlayingUI()
 
 void APlayerCharacterBase::HandlePlayerRotationOnEnemyLocking(float InDeltaTime)
 {
+	// 如果不是本地控制的，就直接返回--针对模拟代理
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
 	// 如果不是在目标锁定状态，直接就啥也不干
 	if (!bTargetingEnemy)
 	{
@@ -191,7 +202,12 @@ void APlayerCharacterBase::HandlePlayerRotationOnEnemyLocking(float InDeltaTime)
 
 		// 角色和控制器朝向都是面向敌人
 		SetActorRotation(NewRotator);
-		GetController()->SetControlRotation(GetActorRotation());
+		// 模拟代理上面，可能拿不到这Controller
+		if (GetController())
+		{
+			GetController()->SetControlRotation(GetActorRotation());
+		}
+
 
 		// 相机的目标朝向
 		FQuat CamertFinalTargetQuat = UKismetMathLibrary::FindLookAtRotation(Camera->GetComponentLocation(), TargetEnemyLocation).Quaternion();
@@ -691,7 +707,10 @@ void APlayerCharacterBase::QuitEnemyLocking()
 		if (PlayerTargetEnemy.IsValid())
 		{
 			// 隐藏图标，移除原来的绑定
-			IEnemyInterface::Execute_QuitTargetLocking(PlayerTargetEnemy.Get());
+			if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+			{
+				IEnemyInterface::Execute_QuitTargetLocking(PlayerTargetEnemy.Get());
+			}
 			Cast<IEnemyInterface>(PlayerTargetEnemy.Get())->GetCancelEnemyLockOnEnemyDiedDelegate()->Remove(*EnemyLockDelegateHandle);
 			EnemyLockDelegateHandle = nullptr;
 			UpdateLockEnemy(nullptr);
@@ -707,7 +726,7 @@ void APlayerCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APlayerCharacterBase, bTargetingEnemy);
-	DOREPLIFETIME(APlayerCharacterBase, bTargetingEnemy);
+	DOREPLIFETIME(APlayerCharacterBase, PlayerTargetEnemy);
 
 }
 
@@ -758,6 +777,10 @@ void APlayerCharacterBase::BeginPlay()
 
 void APlayerCharacterBase::OnEnemyLockingSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
 	// 如果处于锁敌状态，但是没有锁定的敌人，就锁定这个敌人
 	if (bTargetingEnemy)
 	{
@@ -765,7 +788,10 @@ void APlayerCharacterBase::OnEnemyLockingSphereBeginOverlap(UPrimitiveComponent*
 		{
 			UpdateLockEnemy(OtherActor);
 			// 显示锁定图标，绑定代理
-			IEnemyInterface::Execute_SetAsTargetLocking(PlayerTargetEnemy.Get());
+			if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+			{
+				IEnemyInterface::Execute_SetAsTargetLocking(PlayerTargetEnemy.Get());
+			}
 			EnemyLockDelegateHandle = MakeShared<FDelegateHandle>(Cast<IEnemyInterface>(OtherActor)->GetCancelEnemyLockOnEnemyDiedDelegate()->AddUObject(this, &APlayerCharacterBase::FindNewNearstEnemyToLock));
 		}
 	}
@@ -773,6 +799,10 @@ void APlayerCharacterBase::OnEnemyLockingSphereBeginOverlap(UPrimitiveComponent*
 
 void APlayerCharacterBase::OnEnemyLockingSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
 	// 如果锁定的敌人离开了范围
 	if (bTargetingEnemy && PlayerTargetEnemy == OtherActor)
 	{
