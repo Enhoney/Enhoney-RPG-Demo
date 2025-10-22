@@ -74,12 +74,6 @@ private:
 	void TryActivateAbility_CommonAttack();
 	// 与NPC交互
 	void TryInteractWithNPC();
-	
-
-protected:
-	// 是否处于索敌状态
-	UPROPERTY(BlueprintReadWrite, Category = "Combat")
-	bool bIsTargetLocked = false;
 
 private:
 	// NPC交互委托

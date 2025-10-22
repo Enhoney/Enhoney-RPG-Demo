@@ -22,6 +22,8 @@ enum class EEnemyState : uint8
 
 };
 
+DECLARE_MULTICAST_DELEGATE(FCancelEnemyLockOnEnemyDiedSignature);
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UEnemyInterface : public UInterface
@@ -88,4 +90,10 @@ public:
 	// 设置击杀者
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SetKillerPawn(APawn* InKillerPawn);
+
+	// 获取锁敌组件的世界位置
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void GetTargetEnemyLocation(FVector& OutLocation) const;
+
+	virtual FCancelEnemyLockOnEnemyDiedSignature* GetCancelEnemyLockOnEnemyDiedDelegate();
 };

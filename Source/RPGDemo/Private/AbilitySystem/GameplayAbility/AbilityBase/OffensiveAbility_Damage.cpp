@@ -21,7 +21,9 @@ FEnhoneyDamageEffectParams UOffensiveAbility_Damage::MakeDamageEffectParams(cons
         OutParams.TargetASC = Cast<UEnhoneyAbilitySystemComponent>(TragetAbilitySystemInterface->GetAbilitySystemComponent());
     }
     OutParams.DamageGameplayEffectClass = DamageEffectClass;
+    OutParams.RecoveryArcaneEffectClass = RecoveryArcaneEffectClass;
     OutParams.AbilityDamageType = AbilityDamageType;
+    OutParams.AbilityTags = AbilityTags;
     OutParams.AbilityLevel = GetAbilityLevel();
     OutParams.SkillMultiplier = GetSkillMultiplierByLevel();
     OutParams.KnockbackChance = KnockbackChance;

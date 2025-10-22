@@ -78,9 +78,10 @@ public:
 
 	virtual UPlayerAttributeSet* GetPlayerAttributeSet_Implementation() const override;
 
-	virtual bool GetPlayerTargetEnemy_Implementation(AActor*& OutPlayerTargetEnemy) override;
+	virtual bool IsInTargetEnemyLocing_Implementation() const override;
+	virtual bool IsExactEnenyLocking_Implementation() const override;
+	virtual bool GetPlayerTargetEnemy_Implementation(AActor*& OutTargetEnemy) override;
 	virtual void EnterTargetEnemyLocking_Implementation() override;
-	virtual void UpdateTargetEnemy_Implementation(AActor* NewTargetEnemy) override;
 	virtual void QuitTargetEnemyLocking_Implementation() override;
 
 	virtual void SwitchEquippedWeapon_Implementation(const FGameplayTag& NewWeaponTag) override;
@@ -111,6 +112,12 @@ public:
 	UFUNCTION(Server, Reliable, Category = "WeaponSystem")
 	void ServerUpgradeEquippedWeapon();
 
+	// 激活目标锁定
+	void ActivateEnemyLocking();
+
+	// 退出目标锁定
+	void QuitEnemyLocking();
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
@@ -126,9 +133,16 @@ protected:
 	virtual void BeginPlay() override;
 
 	/** EnemyLocking*/
+	// 敌人进入锁敌检测范围
 	UFUNCTION()
 	void OnEnemyLockingSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	// 敌人离开锁敌检测范围
+	UFUNCTION()
+	void OnEnemyLockingSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	// 查找新的最近的敌人来锁定
+	UFUNCTION()
+	void FindNewNearstEnemyToLock();
 private:
 	void InitPlayingUI();
 
@@ -136,7 +150,13 @@ private:
 
 	void EndowPlayerInherentAbility();
 
+	void UpdateLockEnemy(AActor* InEnemy);
 
+	// 锁定相机杆--锁敌使用
+	void LockCameraBoom();
+
+	// 解锁相机杆
+	void UnlockCameraBoom();
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "AbilitySystem|AbilisySystemComponent")
 	TObjectPtr<UEnhoneyAbilitySystemComponent> PlayerAbilitySystemComponent;
@@ -169,11 +189,15 @@ private:
 	TObjectPtr<UDamageBoxComponent> MeleeDamageBox;
 
 protected:
+	// 是否处于锁定敌人状态
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "EnemyLocking")
 	bool bTargetingEnemy = false;
 
+	// 当前锁定的敌人
 	UPROPERTY(BlueprintReadOnly, Category = "EnemyLocking")
-	TObjectPtr<AActor> PlayerTargetEnemy = nullptr;
+	TWeakObjectPtr<AActor> PlayerTargetEnemy = nullptr;
+
+	TSharedPtr<FDelegateHandle> EnemyLockDelegateHandle;
 
 	// 空锁敌累计时间--仅在服务器上有效
 	UPROPERTY()
@@ -182,5 +206,8 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Player Ability|Montage|Common HitReaction")
 	TMap<EEnhoneyHitDirection, TObjectPtr<UAnimMontage>> PlayerHitReactionMontages;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
+	float RotationCurveExponent = 2.f;  // 曲线指数，控制缓动效果
 	
 };

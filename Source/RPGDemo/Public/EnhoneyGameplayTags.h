@@ -65,7 +65,6 @@ public:
 	/** 固有主动技能*/
 	// 玩家技能
 	FGameplayTag Ability_Offensive_Inherent;
-	FGameplayTag Ability_Offensive_Inherent_EnemyLocking;				// 锁敌
 	FGameplayTag Ability_Offensive_Inherent_CommonAttack_Melee;			// 普通攻击--近战
 	FGameplayTag Ability_Offensive_Inherent_CommonAttack_FlyKnife;		// 普通攻击--飞刀
 	FGameplayTag Ability_Offensive_Inherent_CommonAttack_ShootArrow;	// 普通攻击--弩箭
@@ -104,10 +103,6 @@ public:
 #pragma endregion AbilityCooldownTag
 
 #pragma region AbilityEventTag
-	FGameplayTag AbilityEventTag_EnemyLocking_EnemyEntryRange;	// 敌人进入锁敌范围
-	FGameplayTag AbilityEventTag_EnemyLocking_FindNextEnemy;	// 手动查找范围内的敌人
-	FGameplayTag AbilityEventTag_EnemyLocking_EndAbility;		// 手动结束这个能力
-
 	FGameplayTag AbilityEventTag_CommonAttack_Melee;			// 近战普通攻击命中敌人
 
 	FGameplayTag AbilityEventTag_ListenCombat_Enter;			// 进入连击监听状态

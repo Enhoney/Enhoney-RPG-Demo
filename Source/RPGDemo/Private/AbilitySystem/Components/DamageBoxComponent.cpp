@@ -47,6 +47,21 @@ void UDamageBoxComponent::BeginPlay()
 
 void UDamageBoxComponent::OnDamageBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// 打到自己直接忽略
+	if (OtherActor == DamageEffectParams.WorldContextObject)
+	{
+		return;
+	}
+
+	//如果是打到矿物了
+	if (OtherActor->IsA(AEnhoneyMineralBase::StaticClass()))
+	{
+		// 在命中之后，立即取消碰撞
+		SetCombatBoxCollisionEnable(false);
+
+	}
+
+	// 如果是打到角色了
 	if (!OtherActor->Implements<UCombatInterface>())
 	{
 		return;
@@ -63,6 +78,12 @@ void UDamageBoxComponent::OnDamageBoxBeginOverlap(UPrimitiveComponent* Overlappe
 	// 只对存活的目标造成伤害
 	if (ICombatInterface::Execute_IsCharacterAlive(OtherActor))
 	{
+		// 恢复Arcane
+		if (DamageEffectParams.AbilityTags.HasTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Offensive.Inherent.CommonAttack"))))
+		{
+			UEnhoneyAbilitySystemLibrary::ApplyAttributeEffectToSelf(DamageEffectParams.WorldContextObject, DamageEffectParams.RecoveryArcaneEffectClass, DamageEffectParams.SourceASC);
+		}
+
 		if (bCanCauseMeleeDamage)
 		{
 			// 发送GameplayEvent，让GA直接对敌人施加伤害
@@ -100,23 +121,5 @@ void UDamageBoxComponent::OnDamageBoxBeginOverlap(UPrimitiveComponent* Overlappe
 			GetOwner()->Destroy();
 		}
 	}
-
-	//如果是打到矿物了
-	if (OtherActor->IsA(AEnhoneyMineralBase::StaticClass()))
-	{
-		if (bCanCauseMeleeDamage)
-		{
-			// 在命中之后，立即取消碰撞
-			SetCombatBoxCollisionEnable(false);
-		}
-
-		if (bCanCauseRemoteDamge)
-		{
-			// 在命中之后，立即取消碰撞
-			SetCombatBoxCollisionEnable(false);
-
-			// 销毁
-			GetOwner()->Destroy();
-		}
-	}
+	
 }

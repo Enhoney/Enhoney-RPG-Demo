@@ -34,6 +34,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DamageAbilityParams")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
+	// 恢复Arcane的GE
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DamageAbilityParams")
+	TSubclassOf<UGameplayEffect> RecoveryArcaneEffectClass;
+
 	// 技能伤害类型
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "DamageAbilityParams")
 	FGameplayTag AbilityDamageType = FGameplayTag();

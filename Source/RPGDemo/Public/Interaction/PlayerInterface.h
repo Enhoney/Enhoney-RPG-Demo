@@ -93,14 +93,18 @@ public:
 	UPlayerAttributeSet* GetPlayerAttributeSet() const;
 
 	/** TargetEnemy Locking*/
+	// 是否处于目标锁定状态
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "TargetEnemy Locking")
-	bool GetPlayerTargetEnemy(AActor*& OutPlayerTargetEnemy);
+	bool IsInTargetEnemyLocing() const;
+	// 是否真正锁定到敌人
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "TargetEnemy Locking")
+	bool IsExactEnenyLocking() const;
+	// 获取锁定到的敌人
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "TargetEnemy Locking")
+	bool GetPlayerTargetEnemy(AActor*& OutTargetEnemy);
 	// 进入锁敌状态
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "TargetEnemy Locking")
 	void EnterTargetEnemyLocking();
-	// 更新锁定的敌人
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "TargetEnemy Locking")
-	void UpdateTargetEnemy(AActor* NewTargetEnemy);
 	// 退出目标锁定状态
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "TargetEnemy Locking")
 	void QuitTargetEnemyLocking();

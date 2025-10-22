@@ -5,6 +5,7 @@
 
 #include "CombatInterface.h"
 #include "PlayerInterface.h"
+#include "EnemyInterface.h"
 #include "Actor/DamageActorBase.h"
 
 
@@ -33,8 +34,18 @@ void UProjectileAbilityBase::SpawnProjectileToActor(FName SocketName)
 
 		if (bTargetLocking && IsValid(TargetActor))
 		{
-			// 如果锁敌了，就向敌人目标
-			FireRotation = (TargetActor->GetActorLocation() - FireSourceLocation).Rotation();
+			// 如果锁敌了，就向敌人目标组件处发射
+			FVector TargetLocation = FVector::ZeroVector;
+
+			if (TargetActor->Implements<UEnemyInterface>())
+			{
+				IEnemyInterface::Execute_GetTargetEnemyLocation(TargetActor, TargetLocation);
+			}
+			else
+			{
+				TargetLocation = TargetActor->GetActorLocation();
+			}
+			FireRotation = (TargetLocation - FireSourceLocation).Rotation();
 		}
 		else
 		{

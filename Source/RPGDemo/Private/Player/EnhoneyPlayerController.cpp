@@ -97,7 +97,7 @@ void AEnhoneyPlayerController::SetupInputComponent()
 		EnhoneyInputComponent->BindAction(SwitchEquippedWeaponAction, ETriggerEvent::Completed, this, &AEnhoneyPlayerController::SwitchWeapon);
 		EnhoneyInputComponent->BindAction(OpenGamePasueMenuAction, ETriggerEvent::Completed, this, &AEnhoneyPlayerController::OpenPauseMenu);
 
-		EnhoneyInputComponent->BindAction(TargetEnemyLockingAction, ETriggerEvent::Triggered, this, &AEnhoneyPlayerController::EnemyTargetLocking);
+		EnhoneyInputComponent->BindAction(TargetEnemyLockingAction, ETriggerEvent::Completed, this, &AEnhoneyPlayerController::EnemyTargetLocking);
 
 		EnhoneyInputComponent->BindAction(AbilityAction_CommonAttack, ETriggerEvent::Started, this, &AEnhoneyPlayerController::TryActivateAbility_CommonAttack);
 
@@ -141,7 +141,11 @@ void AEnhoneyPlayerController::Move(const FInputActionValue& InputActionValue)
 
 void AEnhoneyPlayerController::Look(const FInputActionValue& InputActionValue)
 {
-	if (bIsTargetLocked) return;
+	// 如果确实处于锁定敌人状态，Conntroller的角度就不由这个控制了
+	if (GetCharacter()->Implements<UPlayerInterface>() && IPlayerInterface::Execute_IsExactEnenyLocking(GetCharacter()))
+	{
+		return;
+	}
 
 	FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
 
@@ -235,23 +239,15 @@ void AEnhoneyPlayerController::EnemyTargetLocking()
 {
 	if (GetCharacter()->Implements<UPlayerInterface>())
 	{
-		AActor* EnemyTargetLocked;
-		if (!IPlayerInterface::Execute_GetPlayerTargetEnemy(GetCharacter(), EnemyTargetLocked))
+		if (!IPlayerInterface::Execute_IsInTargetEnemyLocing(GetCharacter()))
 		{
-			// 还未锁敌，就激活锁敌技能
-			UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetCharacter());
-			if (IsValid(ASC))
-			{
-				FGameplayTagContainer AbilityTagContainer(FEnhoneyGameplayTags::Get().Ability_Offensive_Inherent_EnemyLocking);
-				ASC->TryActivateAbilitiesByTag(AbilityTagContainer);
-			}
-
+			// 还未锁敌，就进入锁敌状态
+			IPlayerInterface::Execute_EnterTargetEnemyLocking(GetCharacter());
 		}
 		else
 		{
-			// 如果已经锁敌，就取消这个技能
-			FGameplayEventData Payload;
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetCharacter(), FEnhoneyGameplayTags::Get().AbilityEventTag_EnemyLocking_EndAbility, Payload);
+			// 如果已经锁敌，退出索敌状态
+			IPlayerInterface::Execute_QuitTargetEnemyLocking(GetCharacter());
 		}
 	}
 	

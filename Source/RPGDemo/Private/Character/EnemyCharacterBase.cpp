@@ -143,17 +143,10 @@ void AEnemyCharacterBase::CharacterDie_Implementation()
 		}
 	}
 
-	// 向所有玩家发送Event，让它更换锁定的目标
 	if (bTargetLocked)
 	{
-		TArray<AActor*>	PlayerCharacters;
-		UGameplayStatics::GetAllActorsOfClass(this, APlayerCharacterBase::StaticClass(), PlayerCharacters);
-
-		for (AActor* PlayerCharacter : PlayerCharacters)
-		{
-			FGameplayEventData Payload;
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(PlayerCharacter, FEnhoneyGameplayTags::Get().AbilityEventTag_EnemyLocking_FindNextEnemy, Payload);
-		}
+		// 执行广播，让锁定他的玩家更换锁定目标
+		OnCancelLockWhenEnemyDied.Broadcast();
 	}
 
 	// 隐藏被锁定的图标
@@ -279,6 +272,23 @@ void AEnemyCharacterBase::SetWarpingFacing_Implementation()
 void AEnemyCharacterBase::SetKillerPawn_Implementation(APawn* InKillerPawn)
 {
 	KillerPawn = InKillerPawn;
+}
+
+void AEnemyCharacterBase::GetTargetEnemyLocation_Implementation(FVector& OutLocation) const
+{
+	if (IsValid(EnemyTargetWidgetComponent))
+	{
+		OutLocation = EnemyTargetWidgetComponent->GetComponentLocation();
+	}
+	else
+	{
+		OutLocation = GetActorLocation();
+	}
+}
+
+FCancelEnemyLockOnEnemyDiedSignature* AEnemyCharacterBase::GetCancelEnemyLockOnEnemyDiedDelegate()
+{
+	return &OnCancelLockWhenEnemyDied;
 }
 
 UEnemyAttributeSet* AEnemyCharacterBase::GetEnemyAttributeSet() const

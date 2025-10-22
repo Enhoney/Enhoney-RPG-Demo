@@ -100,6 +100,10 @@ public:
 	virtual void EnemyEnterCombat_Implementation(APawn* NewCombatTarget) override;
 	virtual void SetWarpingFacing_Implementation() override;
 	virtual void SetKillerPawn_Implementation(APawn* InKillerPawn) override;
+
+	virtual void GetTargetEnemyLocation_Implementation(FVector& OutLocation) const override;
+
+	virtual FCancelEnemyLockOnEnemyDiedSignature* GetCancelEnemyLockOnEnemyDiedDelegate() override;
 	/** Enemy Interface End*/
 
 	UEnemyAttributeSet* GetEnemyAttributeSet() const;
@@ -206,4 +210,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Enemy|EnemyType")
 	FGameplayTag EnemyTypeTag;
+
+	// 死亡取消锁定代理
+	FCancelEnemyLockOnEnemyDiedSignature OnCancelLockWhenEnemyDied;
 };

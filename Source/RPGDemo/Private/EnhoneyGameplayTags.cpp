@@ -72,8 +72,6 @@ void FEnhoneyGameplayTags::InitializeGameplayTags()
 #pragma region AbilityTag
 	EnhoneyGameplayTags.Ability_Offensive_Inherent =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent"), FString("Inherent Offensive Ability"));
-	EnhoneyGameplayTags.Ability_Offensive_Inherent_EnemyLocking =
-		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.EnemyLocking"), FString("Inherent Offensive Ability for EnemyLocking"));
 	EnhoneyGameplayTags.Ability_Offensive_Inherent_CommonAttack_Melee =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.CommonAttack.Melee"), FString("Inherent Offensive Ability for Melee CommonAttack"));
 	EnhoneyGameplayTags.Ability_Offensive_Inherent_CommonAttack_FlyKnife =
@@ -125,13 +123,6 @@ void FEnhoneyGameplayTags::InitializeGameplayTags()
 #pragma endregion AbilityCooldownTag
 
 #pragma region AbilityEventTag
-	EnhoneyGameplayTags.AbilityEventTag_EnemyLocking_EnemyEntryRange =
-		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.EnemyLocking.EnemyEntryRange"), FString("AbilityEventTag EnemyLocking Enemy Entry Range"));
-	EnhoneyGameplayTags.AbilityEventTag_EnemyLocking_FindNextEnemy =
-		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.EnemyLocking.FindNextEnemy"), FString("AbilityEventTag EnemyLocking Find Next Enemy"));
-	EnhoneyGameplayTags.AbilityEventTag_EnemyLocking_EndAbility =
-		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.EnemyLocking.EndAbility"), FString("Quit EnemyLocking"));
-
 	EnhoneyGameplayTags.AbilityEventTag_CommonAttack_Melee =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.CommonAttack.Melee"), FString("Player CommonAttack Melee"));
 

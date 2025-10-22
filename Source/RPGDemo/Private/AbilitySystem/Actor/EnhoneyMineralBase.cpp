@@ -15,6 +15,7 @@
 #include "CommonAlgorithmLibrary.h"
 #include "TimerManager.h"
 #include "EnemyHealthBarWidget.h"
+#include "DamageProjectileActor.h"
 
 
 AEnhoneyMineralBase::AEnhoneyMineralBase()
@@ -156,17 +157,19 @@ void AEnhoneyMineralBase::OnHitByPlayer(UPrimitiveComponent* OverlappedComponent
 				}
 
 			}
-			// 如果是单机模式，或者是本地玩家，就直接破碎
-			if (GetNetMode() == NM_Standalone ||
-				(GetNetMode() == NM_ListenServer) && (GetLocalRole() != ROLE_SimulatedProxy) ||
-				(GetNetMode() == NM_ListenServer) && (GetLocalRole() == ROLE_AutonomousProxy))
-			{
-				BreakMineral();
-			}
+			// 执行破碎
+			BreakMineral();
 			// 破碎之后不在响应DamageBox的碰撞
 			GeometryCollectionComponent->SetCollisionResponseToChannel(ECC_DamageObject, ECR_Ignore);
 			
 		}
+
+		// 如果是远程，就销毁
+		if (OtherActor->IsA(ADamageProjectileActor::StaticClass()))
+		{
+			OtherActor->Destroy();
+		}
+		
 	}
 }
 

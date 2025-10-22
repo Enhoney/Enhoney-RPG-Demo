@@ -59,7 +59,7 @@ APlayerCharacterBase::APlayerCharacterBase()
 	// 索敌查询球型碰撞检测，初始化设置为无碰撞
 	EnemyLockingSphere = CreateDefaultSubobject<USphereComponent>(TEXT("EnemyLockingCollision"));
 	EnemyLockingSphere->SetupAttachment(GetRootComponent());
-	EnemyLockingSphere->SetSphereRadius(500.f);	// 半径为5m
+	EnemyLockingSphere->SetSphereRadius(800.f);	// 半径为8m
 	EnemyLockingSphere->SetCollisionObjectType(ECC_EnemyLocking);
 	EnemyLockingSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 	EnemyLockingSphere->SetCollisionResponseToChannel(ECC_CombatMesh, ECR_Overlap);
@@ -116,10 +116,27 @@ void APlayerCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	HandlePlayerRotationOnEnemyLocking(DeltaTime);
+}
+
+void APlayerCharacterBase::FindNewNearstEnemyToLock()
+{
 	if (bTargetingEnemy)
 	{
-		HandlePlayerRotationOnEnemyLocking(DeltaTime);
-		
+		if (PlayerTargetEnemy.IsValid())
+		{
+			// 隐藏锁定图标，移除原来的绑定
+			IEnemyInterface::Execute_QuitTargetLocking(PlayerTargetEnemy.Get());
+			Cast<IEnemyInterface>(PlayerTargetEnemy.Get())->GetCancelEnemyLockOnEnemyDiedDelegate()->Remove(*EnemyLockDelegateHandle);
+			EnemyLockDelegateHandle = nullptr;
+		}
+		UpdateLockEnemy(UCommonAlgorithmLibrary::GetNearstEnemyInRadius(this, 800.f, false));
+		if (PlayerTargetEnemy.IsValid())
+		{
+			// 显示锁定图标，绑定代理
+			IEnemyInterface::Execute_SetAsTargetLocking(PlayerTargetEnemy.Get());
+			EnemyLockDelegateHandle = MakeShared<FDelegateHandle>(Cast<IEnemyInterface>(PlayerTargetEnemy)->GetCancelEnemyLockOnEnemyDiedDelegate()->AddUObject(this, &APlayerCharacterBase::FindNewNearstEnemyToLock));
+		}
 	}
 }
 
@@ -139,7 +156,14 @@ void APlayerCharacterBase::InitPlayingUI()
 
 void APlayerCharacterBase::HandlePlayerRotationOnEnemyLocking(float InDeltaTime)
 {
-	if (!IsValid(PlayerTargetEnemy))
+	// 如果不是在目标锁定状态，直接就啥也不干
+	if (!bTargetingEnemy)
+	{
+		return;
+	}
+
+	// 计时，5秒没有锁定到敌人时，自行退出
+	if (!PlayerTargetEnemy.IsValid())
 	{
 		EmptyEnemyTime += InDeltaTime;
 	}
@@ -148,16 +172,15 @@ void APlayerCharacterBase::HandlePlayerRotationOnEnemyLocking(float InDeltaTime)
 		EmptyEnemyTime = 0.f;
 	}
 
-	// 如果空锁敌超时，就手动结束这个能力
+	// 如果空锁敌超时，就自动退出锁敌状态
 	if (EmptyEnemyTime > 5.f)
 	{
-		FGameplayEventData Payload;
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, FEnhoneyGameplayTags::Get().AbilityEventTag_EnemyLocking_EndAbility, Payload);
+		QuitEnemyLocking();
 		return;
 	}
 
 	// 设置PlayerCharactetr朝向
-	if (IsValid(PlayerTargetEnemy))
+	if (PlayerTargetEnemy.IsValid())
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 
@@ -166,12 +189,20 @@ void APlayerCharacterBase::HandlePlayerRotationOnEnemyLocking(float InDeltaTime)
 
 		NewRotator = FRotator(0.f, NewRotator.Yaw, 0.f);
 
+		// 角色和控制器朝向都是面向敌人
 		SetActorRotation(NewRotator);
-	}
-	else
-	{
-		// 如果锁定的敌人无效，就恢复原来的Rotation配置
-		GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetController()->SetControlRotation(GetActorRotation());
+
+		// 相机的目标朝向
+		FQuat CamertFinalTargetQuat = UKismetMathLibrary::FindLookAtRotation(Camera->GetComponentLocation(), TargetEnemyLocation).Quaternion();
+		
+		// 缓动曲线
+		float EasedAlpha = FMath::InterpEaseInOut(0.0f, 1.0f, InDeltaTime, RotationCurveExponent);	// 使用平方缓动
+		// 执行四元数插值
+		FQuat CamertLerpTargetQuat = FQuat::Slerp(Camera->GetComponentQuat(), CamertFinalTargetQuat, EasedAlpha);
+		
+		// 设置相机朝向--面向敌人
+		Camera->SetWorldRotation(CamertLerpTargetQuat);
 	}
 }
 
@@ -202,6 +233,50 @@ void APlayerCharacterBase::EndowPlayerInherentAbility()
 			}
 		}
 	}
+}
+
+void APlayerCharacterBase::UpdateLockEnemy(AActor* InEnemy)
+{
+	if (bTargetingEnemy)
+	{
+		if (IsValid(InEnemy))
+		{
+			// 如果有效，并且原来是无效的，就真正进入锁定状态
+			if (!PlayerTargetEnemy.IsValid())
+			{
+				LockCameraBoom();
+				// 角色不再使用移动朝向
+				GetCharacterMovement()->bOrientRotationToMovement = false;
+			}
+			
+		}
+		else
+		{
+			// 如果无效，并且原来是有效的，就回到监听状态
+			if (PlayerTargetEnemy.IsValid())
+			{
+				UnlockCameraBoom();
+				// 恢复移动朝向
+				GetCharacterMovement()->bOrientRotationToMovement = true;
+				// 重置相机角度--面向玩家角色
+				Camera->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
+			}
+		}
+		PlayerTargetEnemy = InEnemy;
+	}
+	
+}
+
+void APlayerCharacterBase::LockCameraBoom()
+{
+	// 固定相机杆，拉进视角
+	CameraBoom->bUsePawnControlRotation = false;
+	CameraBoom->SetRelativeRotation(FRotator(-30.f, 0.f, 0.f));
+}
+
+void APlayerCharacterBase::UnlockCameraBoom()
+{
+	CameraBoom->bUsePawnControlRotation = true;
 }
 
 UAbilitySystemComponent* APlayerCharacterBase::GetAbilitySystemComponent() const
@@ -388,57 +463,30 @@ UPlayerAttributeSet* APlayerCharacterBase::GetPlayerAttributeSet_Implementation(
 	return GetPlayerAttributeSet();
 }
 
-bool APlayerCharacterBase::GetPlayerTargetEnemy_Implementation(AActor*& OutPlayerTargetEnemy)
+bool APlayerCharacterBase::IsInTargetEnemyLocing_Implementation() const
 {
-	OutPlayerTargetEnemy = PlayerTargetEnemy;
-
 	return bTargetingEnemy;
+}
+
+bool APlayerCharacterBase::IsExactEnenyLocking_Implementation() const
+{
+	return (bTargetingEnemy && PlayerTargetEnemy.IsValid());
+}
+
+bool APlayerCharacterBase::GetPlayerTargetEnemy_Implementation(AActor*& OutTargetEnemy)
+{
+	OutTargetEnemy = PlayerTargetEnemy.Get();
+	return PlayerTargetEnemy.IsValid();
 }
 
 void APlayerCharacterBase::EnterTargetEnemyLocking_Implementation()
 {
-	bTargetingEnemy = true;
-
-	// 启用碰撞
-	EnemyLockingSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	EnemyLockingSphere->SetGenerateOverlapEvents(true);
-}
-
-void APlayerCharacterBase::UpdateTargetEnemy_Implementation(AActor* NewTargetEnemy)
-{
-	PlayerTargetEnemy = NewTargetEnemy;
-
-	// 如果更新之后找到的TargetEnemy无效，就表明范围内没有敌人了，就重新启用碰撞
-	if (bTargetingEnemy)
-	{
-		if (!IsValid(NewTargetEnemy))
-		{
-			EnemyLockingSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-			EnemyLockingSphere->SetGenerateOverlapEvents(true);
-		}
-		else
-		{
-			EnemyLockingSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			EnemyLockingSphere->SetGenerateOverlapEvents(false);
-		}
-	}
-	else
-	{
-		EnemyLockingSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		EnemyLockingSphere->SetGenerateOverlapEvents(false);
-	}
+	ActivateEnemyLocking();
 }
 
 void APlayerCharacterBase::QuitTargetEnemyLocking_Implementation()
 {
-	if (IsValid(PlayerTargetEnemy))
-	{
-		// Enemy退出被锁定的状态
-		IEnemyInterface::Execute_QuitTargetLocking(PlayerTargetEnemy);
-	}
-
-	bTargetingEnemy = false;
-	PlayerTargetEnemy = nullptr;
+	QuitEnemyLocking();
 }
 
 void APlayerCharacterBase::SwitchEquippedWeapon_Implementation(const FGameplayTag& NewWeaponTag)
@@ -619,6 +667,41 @@ void APlayerCharacterBase::ServerUpgradeEquippedWeapon_Implementation()
 	PlayerWeaponComponent->UpgradeCurrentWeaponLevel();
 }
 
+void APlayerCharacterBase::ActivateEnemyLocking()
+{
+	if (!bTargetingEnemy)
+	{
+		bTargetingEnemy = true;
+
+		// 找新的锁定目标
+		FindNewNearstEnemyToLock();
+
+		// 启用检测球体
+		EnemyLockingSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	}
+}
+
+void APlayerCharacterBase::QuitEnemyLocking()
+{
+	if (bTargetingEnemy)
+	{
+		bTargetingEnemy = false;
+
+		// 解绑代理，重置锁定目标
+		if (PlayerTargetEnemy.IsValid())
+		{
+			// 隐藏图标，移除原来的绑定
+			IEnemyInterface::Execute_QuitTargetLocking(PlayerTargetEnemy.Get());
+			Cast<IEnemyInterface>(PlayerTargetEnemy.Get())->GetCancelEnemyLockOnEnemyDiedDelegate()->Remove(*EnemyLockDelegateHandle);
+			EnemyLockDelegateHandle = nullptr;
+			UpdateLockEnemy(nullptr);
+		}
+
+		// 关闭检测
+		EnemyLockingSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
 void APlayerCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -670,20 +753,30 @@ void APlayerCharacterBase::BeginPlay()
 
 	// 绑定重叠代理
 	EnemyLockingSphere->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacterBase::OnEnemyLockingSphereBeginOverlap);
+	EnemyLockingSphere->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacterBase::OnEnemyLockingSphereEndOverlap);
 }
 
 void APlayerCharacterBase::OnEnemyLockingSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// 如果处于锁敌状态，但是没有锁定的敌人，就锁定这个敌人
 	if (bTargetingEnemy)
 	{
-		if (!IsValid(PlayerTargetEnemy) && OtherActor->IsA<AEnemyCharacterBase>())
+		if (!PlayerTargetEnemy.IsValid() && OtherActor->Implements<UEnemyInterface>())
 		{
-			FGameplayEventData Payload;
-			Payload.Instigator = OtherActor;
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, FEnhoneyGameplayTags::Get().AbilityEventTag_EnemyLocking_EnemyEntryRange, Payload);
-
-			// 取消EnemyLocking Sphere的碰撞
-			EnemyLockingSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			UpdateLockEnemy(OtherActor);
+			// 显示锁定图标，绑定代理
+			IEnemyInterface::Execute_SetAsTargetLocking(PlayerTargetEnemy.Get());
+			EnemyLockDelegateHandle = MakeShared<FDelegateHandle>(Cast<IEnemyInterface>(OtherActor)->GetCancelEnemyLockOnEnemyDiedDelegate()->AddUObject(this, &APlayerCharacterBase::FindNewNearstEnemyToLock));
 		}
+	}
+}
+
+void APlayerCharacterBase::OnEnemyLockingSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	// 如果锁定的敌人离开了范围
+	if (bTargetingEnemy && PlayerTargetEnemy == OtherActor)
+	{
+		// 重新查找一次范围内最近的敌人
+		FindNewNearstEnemyToLock();
 	}
 }

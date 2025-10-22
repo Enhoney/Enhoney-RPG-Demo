@@ -35,9 +35,17 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "DamageEffectParams")
 	TSubclassOf<UGameplayEffect> DamageGameplayEffectClass;
 
+	// 恢复Arcane的GE类
+	UPROPERTY(BlueprintReadWrite, Category = "DamageEffectParams")
+	TSubclassOf<UGameplayEffect> RecoveryArcaneEffectClass;
+
 	// 技能伤害类型
 	UPROPERTY(BlueprintReadWrite, Category = "DamageEffectParams")
 	FGameplayTag AbilityDamageType = FGameplayTag();
+
+	// AbilityTag
+	UPROPERTY(BlueprintReadWrite, Category = "DamageEffectParams")
+	FGameplayTagContainer AbilityTags = FGameplayTagContainer();
 
 	// 技能倍率
 	UPROPERTY(BlueprintReadWrite, Category = "DamageEffectParams")
