@@ -13,6 +13,16 @@ TArray<FPlayerAbilityInfo> UEnhoneyPlayerAbilityInfo::GetInherentPassiveAbilityI
 	return PassiveAbilityInfo_Inherent;
 }
 
+TArray<FPlayerAbilityInfo> UEnhoneyPlayerAbilityInfo::GetVariableOffensiveAbilityInfo() const
+{
+	return OffensiveAbilityInfo_Variable;
+}
+
+TArray<FPlayerAbilityInfo> UEnhoneyPlayerAbilityInfo::GetVariablePassiveAbilityInfo() const
+{
+	return PassiveAbilityInfo_Variable;
+}
+
 bool UEnhoneyPlayerAbilityInfo::GetOffensiveAbilityInfoByTag(const FGameplayTag& InAbilityTag, FPlayerAbilityInfo& OutAbilityInfo)
 {
 	bool OutResult = false;

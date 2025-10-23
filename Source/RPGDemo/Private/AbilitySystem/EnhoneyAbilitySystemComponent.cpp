@@ -8,7 +8,7 @@
 
 #include "PlayerAttributeSet.h"
 #include "EnhoneyAbilityBase.h"
-
+#include "EnhoneyGameplayTags.h"
 #include "EnhoneyLogChannel.h"
 
 void UEnhoneyAbilitySystemComponent::ServerUpgradeAttributePoint_Implementation(const FGameplayTag& InAttributeTag)
@@ -68,6 +68,17 @@ void UEnhoneyAbilitySystemComponent::EndowInherentAbility(TSubclassOf<UEnhoneyAb
 
 }
 
+void UEnhoneyAbilitySystemComponent::EndowVariableAbility(TSubclassOf<UEnhoneyAbilityBase> AbilityClassToEndow)
+{
+	check(AbilityClassToEndow);
+
+	FGameplayAbilitySpec InherentAbilitySpec = FGameplayAbilitySpec(AbilityClassToEndow, 1);
+	// 默认锁定
+	InherentAbilitySpec.DynamicAbilityTags.AddTag(FEnhoneyGameplayTags::Get().AbilityStatus_Locked);
+
+	GiveAbility(InherentAbilitySpec);
+}
+
 FGameplayAbilitySpec* UEnhoneyAbilitySystemComponent::GetAbilitySpecByTag(const FGameplayTag& InAbilityTag)
 {
 	// 避免有能力被移除或者添加
@@ -78,6 +89,25 @@ FGameplayAbilitySpec* UEnhoneyAbilitySystemComponent::GetAbilitySpecByTag(const 
 		for (FGameplayTag AbilityTag : AbilitySpec.Ability->AbilityTags)
 		{
 			if (AbilityTag.MatchesTagExact(InAbilityTag))
+			{
+				return &AbilitySpec;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+FGameplayAbilitySpec* UEnhoneyAbilitySystemComponent::GetAbilitySpecByInputTag(const FGameplayTag& InAbilityInputTag)
+{
+	// 避免有能力被移除或者添加
+	FScopedAbilityListLock AbilityLock(*this);
+
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())
+	{
+		for (FGameplayTag DynamicTag : AbilitySpec.DynamicAbilityTags)
+		{
+			if (DynamicTag.MatchesTagExact(InAbilityInputTag))
 			{
 				return &AbilitySpec;
 			}
@@ -105,4 +135,26 @@ void UEnhoneyAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySp
 	{
 		InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, Spec.Handle, Spec.ActivationInfo.GetActivationPredictionKey());
 	}
+}
+
+bool UEnhoneyAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& InAbilityInputTag)
+{
+	if (!InAbilityInputTag.IsValid())
+	{
+		return false;
+	}
+
+	// 尝试激活技能
+	if (FGameplayAbilitySpec* AbilitySpecToActive = GetAbilitySpecByInputTag(InAbilityInputTag))
+	{
+		if (!AbilitySpecToActive->IsActive())
+		{
+			AbilitySpecInputReleased(*AbilitySpecToActive);
+			TryActivateAbility(AbilitySpecToActive->Handle);
+			return true;
+		}
+		
+	}
+
+	return false;
 }

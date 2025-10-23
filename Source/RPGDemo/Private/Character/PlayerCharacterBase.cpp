@@ -86,6 +86,8 @@ void APlayerCharacterBase::PossessedBy(AController* NewController)
 
 		// 赋予固有技能
 		EndowPlayerInherentAbility();
+		// 赋予可变技能
+		EndowPlaeyrVariableAbilityAndLock();
 
 		// 显示PlayingWidget 主UI，在DS服务器上没有HUD，所以没有问题，这里调用的目的是让单机模式能够看到UI
 		InitPlayingUI();
@@ -245,6 +247,26 @@ void APlayerCharacterBase::EndowPlayerInherentAbility()
 				for (const FPlayerAbilityInfo& InherentPassiveAbility : InherentPassiveAbilities)
 				{
 					EnhoneyASC->EndowInherentAbility(InherentPassiveAbility.AbilityClass, true);
+				}
+			}
+		}
+	}
+}
+
+void APlayerCharacterBase::EndowPlaeyrVariableAbilityAndLock()
+{
+	if (HasAuthority())
+	{
+		if (AEnhoneyPlayerState* EnhoneyPlayerState = GetPlayerState<AEnhoneyPlayerState>())
+		{
+			UEnhoneyAbilitySystemComponent* EnhoneyASC = CastChecked<UEnhoneyAbilitySystemComponent>(GetAbilitySystemComponent());
+			// 赋予可变主动技能并锁定
+			TArray<FPlayerAbilityInfo> VariableOffensiveAbilities = EnhoneyPlayerState->PlayerAbilityInfo->GetVariableOffensiveAbilityInfo();
+			if (!VariableOffensiveAbilities.IsEmpty())
+			{
+				for (const FPlayerAbilityInfo& VariableOffensiveAbilitiy : VariableOffensiveAbilities)
+				{
+					EnhoneyASC->EndowVariableAbility(VariableOffensiveAbilitiy.AbilityClass);
 				}
 			}
 		}

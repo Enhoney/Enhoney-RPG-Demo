@@ -9,6 +9,8 @@
 
 class UInputMappingContext;
 class UInputAction;
+class UEnhoneyAbilitySystemComponent;
+class UAbilityInputConfig;
 
 struct FInputActionValue;
 
@@ -52,6 +54,8 @@ protected:
 
 	virtual void SetupInputComponent() override;
 
+	UEnhoneyAbilitySystemComponent* GetEnhoneyAbilitySystemComponent();
+
 private:
 	// 常规输入行为
 	void Move(const FInputActionValue& InputActionValue);
@@ -74,6 +78,9 @@ private:
 	void TryActivateAbility_CommonAttack();
 	// 与NPC交互
 	void TryInteractWithNPC();
+
+	// 技能按钮抬起
+	void AbilityInputReleased(FGameplayTag InAbilityInputTag);
 
 private:
 	// NPC交互委托
@@ -116,6 +123,14 @@ private:
 	// NPC交互
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Ability")
 	TObjectPtr<UInputAction> InteractWithNPCAction;
+
+	// AbilityInputActinoConfig
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Ability")
+	TObjectPtr<UAbilityInputConfig> AbilityInputActionConfig;
+
+	UPROPERTY()
+	TWeakObjectPtr<UEnhoneyAbilitySystemComponent> ASC;
+
 
 	bool bIsCharacterMenuOpened = false;
 

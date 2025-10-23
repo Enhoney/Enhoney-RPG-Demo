@@ -8,6 +8,29 @@ FEnhoneyGameplayTags FEnhoneyGameplayTags::EnhoneyGameplayTags;
 
 void FEnhoneyGameplayTags::InitializeGameplayTags()
 {
+
+#pragma region InputTag
+	// 可变技能匹配的InputTag
+	EnhoneyGameplayTags.InputTag_E =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.E"), FString("InputTag E Key"));
+	EnhoneyGameplayTags.InputTag_Q = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.Q"), FString("InputTag Q Key"));
+	EnhoneyGameplayTags.InputTag_R = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("InputTag.R"), FString("InputTag R Key"));
+
+#pragma endregion InputTag
+
+#pragma region AbilityStatus
+	// 可变技能的状态
+	EnhoneyGameplayTags.AbilityStatus_Locked = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityStatus.Locked"), FString("AbilityStatus Locked"));
+	EnhoneyGameplayTags.AbilityStatus_Eligible = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityStatus.Eligible"), FString("AbilityStatus Eligible"));
+	EnhoneyGameplayTags.AbilityStatus_Unlocked = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityStatus.Unlocked"), FString("AbilityStatus Unlocked"));
+	EnhoneyGameplayTags.AbilityStatus_Equipped = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityStatus.Equipped"), FString("AbilityStatus Equipped"));
+#pragma endregion AbilityStatus
 #pragma region AttributeTag
 	EnhoneyGameplayTags.Attribute_Primary_Strength =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attribute.Primary.Strength"), FString("Player's Strength"));
@@ -95,6 +118,18 @@ void FEnhoneyGameplayTags::InitializeGameplayTags()
 	
 	EnhoneyGameplayTags.Ability_Offensive_Variable =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Variable"), FString("Variable Offensive Ability"));
+	EnhoneyGameplayTags.Ability_Offensive_Variable_IceShield = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Variable.IceShield"), FString("Variable Offensive Ability IceShield"));
+	EnhoneyGameplayTags.Ability_Offensive_Variable_FireShield = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Variable.FireShield"), FString("Variable Offensive Ability FireShield"));
+	EnhoneyGameplayTags.Ability_Offensive_Variable_FireBall = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Variable.FireBall"), FString("Variable Offensive Ability FireBall"));
+	EnhoneyGameplayTags.Ability_Offensive_Variable_IceBall =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Variable.IceBall"), FString("Variable Offensive Ability IceBall"));
+	EnhoneyGameplayTags.Ability_Offensive_Variable_StarFallen =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Variable.StarFallen"), FString("Variable Offensive Ability StarFallen"));
+	EnhoneyGameplayTags.Ability_Offensive_Variable_LimboIce =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Variable.LimboIce"), FString("Variable Offensive Ability LimboIce"));
 
 	EnhoneyGameplayTags.Ability_Passive_Inherent =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Passive.Inherent"), FString("Inherent Passive Ability"));

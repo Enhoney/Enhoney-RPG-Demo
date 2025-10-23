@@ -150,6 +150,8 @@ private:
 
 	void EndowPlayerInherentAbility();
 
+	void EndowPlaeyrVariableAbilityAndLock();
+
 	void UpdateLockEnemy(AActor* InEnemy);
 
 	// 锁定相机杆--锁敌使用

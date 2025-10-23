@@ -50,6 +50,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerAbility|AbilityInfo")
 	TArray<FPlayerAbilityInfo> GetInherentPassiveAbilityInfo() const;
 
+	UFUNCTION(BlueprintCallable, Category = "PlayerAbility|AbilityInfo")
+	TArray<FPlayerAbilityInfo> GetVariableOffensiveAbilityInfo() const;
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerAbility|AbilityInfo")
+	TArray<FPlayerAbilityInfo> GetVariablePassiveAbilityInfo() const;
+
 	// 查找可变主动技能信息
 	UFUNCTION(BlueprintCallable, Category = "PlayerAbility|AbilityInfo")
 	bool GetOffensiveAbilityInfoByTag(const FGameplayTag& InAbilityTag, FPlayerAbilityInfo& OutAbilityInfo);

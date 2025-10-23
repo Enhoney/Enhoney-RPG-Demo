@@ -103,8 +103,18 @@ void AEnhoneyPlayerController::SetupInputComponent()
 
 		EnhoneyInputComponent->BindAction(InteractWithNPCAction, ETriggerEvent::Started, this, &AEnhoneyPlayerController::TryInteractWithNPC);
 
-		
+		// 技能按钮的释放
+		EnhoneyInputComponent->BindAbilityInputActions(AbilityInputActionConfig, this, &AEnhoneyPlayerController::AbilityInputReleased);
 	}
+}
+
+UEnhoneyAbilitySystemComponent* AEnhoneyPlayerController::GetEnhoneyAbilitySystemComponent()
+{
+	if (!ASC.IsValid())
+	{
+		ASC = CastChecked<UEnhoneyAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetCharacter()));
+	}
+	return ASC.Get();
 }
 
 void AEnhoneyPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -255,22 +265,17 @@ void AEnhoneyPlayerController::EnemyTargetLocking()
 
 void AEnhoneyPlayerController::TryActivateAbility_CommonAttack()
 {
-	if (GetCharacter()->Implements<UPlayerInterface>())
+	if (GetEnhoneyAbilitySystemComponent())
 	{
-		UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetCharacter());
+		// 找到这个能力的Spec
+		FGameplayAbilitySpec CommonAttackAbilitySpec = UEnhoneyAbilitySystemLibrary::GetAbilitySpecByTag(
+			GetEnhoneyAbilitySystemComponent(), IPlayerInterface::Execute_GetCommonAttackAbilityTag(GetCharacter()));
 
-		if (IsValid(ASC))
+		ASC->AbilitySpecInputPressed(CommonAttackAbilitySpec);
+
+		if (!CommonAttackAbilitySpec.IsActive())
 		{
-			// 找到这个能力的Spec
-			FGameplayAbilitySpec CommonAttackAbilitySpec = UEnhoneyAbilitySystemLibrary::GetAbilitySpecByTag(
-				ASC, IPlayerInterface::Execute_GetCommonAttackAbilityTag(GetCharacter()));
-
-			ASC->AbilitySpecInputPressed(CommonAttackAbilitySpec);
-
-			if (!CommonAttackAbilitySpec.IsActive())
-			{
-				ASC->TryActivateAbility(CommonAttackAbilitySpec.Handle);
-			}
+			ASC->TryActivateAbility(CommonAttackAbilitySpec.Handle);
 		}
 	}
 
@@ -281,17 +286,15 @@ void AEnhoneyPlayerController::TryInteractWithNPC()
 	if (!bCanInteract || bIsCharacterMenuOpened) return;
 	if (GetCharacter()->Implements<UPlayerInterface>())
 	{
-		UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetCharacter());
-
-		if (IsValid(ASC))
+		if (GetEnhoneyAbilitySystemComponent())
 		{
 			// 找到这个能力的Spec
 			FGameplayAbilitySpec InteractionAbilitySpec = UEnhoneyAbilitySystemLibrary::GetAbilitySpecByTag(
-				ASC, FEnhoneyGameplayTags::Get().Ability_Offensive_Inherent_InteractWithNPC);
+				GetEnhoneyAbilitySystemComponent(), FEnhoneyGameplayTags::Get().Ability_Offensive_Inherent_InteractWithNPC);
 
 			if (!InteractionAbilitySpec.IsActive())
 			{
-				ASC->TryActivateAbility(InteractionAbilitySpec.Handle);
+				GetEnhoneyAbilitySystemComponent()->TryActivateAbility(InteractionAbilitySpec.Handle);
 
 				/** 触发NPC交互委托
 				 * --记住TryInteractWithNPC，这些绑定到InputAction的函数都只会在客户端执行，
@@ -302,5 +305,13 @@ void AEnhoneyPlayerController::TryInteractWithNPC()
 			}
 		}
 
+	}
+}
+
+void AEnhoneyPlayerController::AbilityInputReleased(FGameplayTag InAbilityInputTag)
+{
+	if(!GetEnhoneyAbilitySystemComponent())
+	{
+		GetEnhoneyAbilitySystemComponent()->AbilityInputTagReleased(InAbilityInputTag);
 	}
 }

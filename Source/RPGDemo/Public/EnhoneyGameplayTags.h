@@ -20,6 +20,22 @@ public:
 
 public:
 
+#pragma region InputTag
+	// 可变技能匹配的InputTag
+	FGameplayTag InputTag_E;
+	FGameplayTag InputTag_Q;
+	FGameplayTag InputTag_R;
+
+#pragma endregion InputTag
+	
+#pragma region AbilityStatus
+	// 可变技能的状态
+	FGameplayTag AbilityStatus_Locked;		// 技能锁定状态
+	FGameplayTag AbilityStatus_Eligible;	// 技能可解锁状态
+	FGameplayTag AbilityStatus_Unlocked;	// 技能已解锁，但是没有装备上
+	FGameplayTag AbilityStatus_Equipped;	// 技能已装备
+#pragma endregion AbilityStatus
+
 #pragma region AttributeTag
 	/** Attribute Tag*/
 
@@ -80,6 +96,13 @@ public:
 
 	/** 可变主动技能*/
 	FGameplayTag Ability_Offensive_Variable;
+	FGameplayTag Ability_Offensive_Variable_IceShield;	// 冰盾
+	FGameplayTag Ability_Offensive_Variable_FireShield;	// 火盾
+	FGameplayTag Ability_Offensive_Variable_FireBall;	// 火球术
+	FGameplayTag Ability_Offensive_Variable_IceBall;	// 冰球书
+	FGameplayTag Ability_Offensive_Variable_StarFallen;	// 八荒星陨
+	FGameplayTag Ability_Offensive_Variable_LimboIce;	// 幽冥寒冰
+
 
 	/** 固有被动技能*/
 	FGameplayTag Ability_Passive_Inherent;
