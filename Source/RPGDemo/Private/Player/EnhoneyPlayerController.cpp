@@ -112,7 +112,7 @@ UEnhoneyAbilitySystemComponent* AEnhoneyPlayerController::GetEnhoneyAbilitySyste
 {
 	if (!ASC.IsValid())
 	{
-		ASC = CastChecked<UEnhoneyAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetCharacter()));
+		ASC = Cast<UEnhoneyAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetCharacter()));
 	}
 	return ASC.Get();
 }

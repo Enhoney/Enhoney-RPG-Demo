@@ -123,26 +123,27 @@ void APlayerCharacterBase::Tick(float DeltaTime)
 
 void APlayerCharacterBase::FindNewNearstEnemyToLock()
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
 	if (bTargetingEnemy)
 	{
-		if (PlayerTargetEnemy.IsValid())
+		if (IsValid(PlayerTargetEnemy))
 		{
 			// 隐藏锁定图标，移除原来的绑定
-			if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
+			HideEnemyLockIcon(PlayerTargetEnemy);
+			if (EnemyLockDelegateHandle)
 			{
-				IEnemyInterface::Execute_SetAsTargetLocking(PlayerTargetEnemy.Get());
+				Cast<IEnemyInterface>(PlayerTargetEnemy.Get())->GetCancelEnemyLockOnEnemyDiedDelegate()->Remove(*EnemyLockDelegateHandle);
+				EnemyLockDelegateHandle = nullptr;
 			}
-			Cast<IEnemyInterface>(PlayerTargetEnemy.Get())->GetCancelEnemyLockOnEnemyDiedDelegate()->Remove(*EnemyLockDelegateHandle);
-			EnemyLockDelegateHandle = nullptr;
 		}
 		UpdateLockEnemy(UCommonAlgorithmLibrary::GetNearstEnemyInRadius(this, 800.f, false));
-		if (PlayerTargetEnemy.IsValid())
+		if (IsValid(PlayerTargetEnemy))
 		{
 			// 显示锁定图标，绑定代理
-			if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-			{
-				IEnemyInterface::Execute_QuitTargetLocking(PlayerTargetEnemy.Get());
-			}
+			ShowEnemyLockIcon(PlayerTargetEnemy);
 			EnemyLockDelegateHandle = MakeShared<FDelegateHandle>(Cast<IEnemyInterface>(PlayerTargetEnemy)->GetCancelEnemyLockOnEnemyDiedDelegate()->AddUObject(this, &APlayerCharacterBase::FindNewNearstEnemyToLock));
 		}
 	}
@@ -164,36 +165,35 @@ void APlayerCharacterBase::InitPlayingUI()
 
 void APlayerCharacterBase::HandlePlayerRotationOnEnemyLocking(float InDeltaTime)
 {
-	// 如果不是本地控制的，就直接返回--针对模拟代理
-	if (!IsLocallyControlled())
-	{
-		return;
-	}
 	// 如果不是在目标锁定状态，直接就啥也不干
 	if (!bTargetingEnemy)
 	{
 		return;
 	}
 
-	// 计时，5秒没有锁定到敌人时，自行退出
-	if (!PlayerTargetEnemy.IsValid())
+	// 计时，5秒没有锁定到敌人时，自行退出，这个逻辑只在服务器上执行
+	if (HasAuthority())
 	{
-		EmptyEnemyTime += InDeltaTime;
-	}
-	else
-	{
-		EmptyEnemyTime = 0.f;
-	}
+		if (!IsValid(PlayerTargetEnemy))
+		{
+			EmptyEnemyTime += InDeltaTime;
+		}
+		else
+		{
+			EmptyEnemyTime = 0.f;
+		}
 
-	// 如果空锁敌超时，就自动退出锁敌状态
-	if (EmptyEnemyTime > 5.f)
-	{
-		QuitEnemyLocking();
-		return;
+		// 如果空锁敌超时，就自动退出锁敌状态
+		if (EmptyEnemyTime > 5.f)
+		{
+			ServerQuitEnemyLocking();
+			return;
+		}
 	}
+	
 
 	// 设置PlayerCharactetr朝向
-	if (PlayerTargetEnemy.IsValid())
+	if (IsValid(PlayerTargetEnemy))
 	{
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 
@@ -208,19 +208,18 @@ void APlayerCharacterBase::HandlePlayerRotationOnEnemyLocking(float InDeltaTime)
 		if (GetController())
 		{
 			GetController()->SetControlRotation(GetActorRotation());
+
+			// 相机的目标朝向
+			FQuat CamertFinalTargetQuat = UKismetMathLibrary::FindLookAtRotation(Camera->GetComponentLocation(), TargetEnemyLocation).Quaternion();
+
+			// 缓动曲线
+			float EasedAlpha = FMath::InterpEaseInOut(0.0f, 1.0f, InDeltaTime, RotationCurveExponent);	// 使用平方缓动
+			// 执行四元数插值
+			FQuat CamertLerpTargetQuat = FQuat::Slerp(Camera->GetComponentQuat(), CamertFinalTargetQuat, EasedAlpha);
+
+			// 设置相机朝向--面向敌人
+			Camera->SetWorldRotation(CamertLerpTargetQuat);
 		}
-
-
-		// 相机的目标朝向
-		FQuat CamertFinalTargetQuat = UKismetMathLibrary::FindLookAtRotation(Camera->GetComponentLocation(), TargetEnemyLocation).Quaternion();
-		
-		// 缓动曲线
-		float EasedAlpha = FMath::InterpEaseInOut(0.0f, 1.0f, InDeltaTime, RotationCurveExponent);	// 使用平方缓动
-		// 执行四元数插值
-		FQuat CamertLerpTargetQuat = FQuat::Slerp(Camera->GetComponentQuat(), CamertFinalTargetQuat, EasedAlpha);
-		
-		// 设置相机朝向--面向敌人
-		Camera->SetWorldRotation(CamertLerpTargetQuat);
 	}
 }
 
@@ -275,12 +274,16 @@ void APlayerCharacterBase::EndowPlaeyrVariableAbilityAndLock()
 
 void APlayerCharacterBase::UpdateLockEnemy(AActor* InEnemy)
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
 	if (bTargetingEnemy)
 	{
 		if (IsValid(InEnemy))
 		{
 			// 如果有效，并且原来是无效的，就真正进入锁定状态
-			if (!PlayerTargetEnemy.IsValid())
+			if (!IsValid(PlayerTargetEnemy))
 			{
 				LockCameraBoom();
 				// 角色不再使用移动朝向
@@ -291,7 +294,7 @@ void APlayerCharacterBase::UpdateLockEnemy(AActor* InEnemy)
 		else
 		{
 			// 如果无效，并且原来是有效的，就回到监听状态
-			if (PlayerTargetEnemy.IsValid())
+			if (IsValid(PlayerTargetEnemy))
 			{
 				UnlockCameraBoom();
 				// 恢复移动朝向
@@ -315,6 +318,77 @@ void APlayerCharacterBase::LockCameraBoom()
 void APlayerCharacterBase::UnlockCameraBoom()
 {
 	CameraBoom->bUsePawnControlRotation = true;
+}
+
+void APlayerCharacterBase::OnRep_TargetEnemy(AActor* OldPlayerTargetEnemy)
+{
+	if (GetLocalRole() != ENetRole::ROLE_AutonomousProxy)
+	{
+		return;
+	}
+
+	if (!IsValid(OldPlayerTargetEnemy))
+	{
+		// 如果有效，并且原来是无效的，就真正进入锁定状态
+		if (IsValid(PlayerTargetEnemy))
+		{
+			LockCameraBoom();
+			// 角色不再使用移动朝向
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+
+			// 此时显示锁定图标
+			ShowEnemyLockIcon(PlayerTargetEnemy);
+		}
+
+	}
+	else
+	{
+		// 如果无效，并且原来是有效的，就回到监听状态
+		if (!IsValid(PlayerTargetEnemy))
+		{
+			UnlockCameraBoom();
+			// 恢复移动朝向
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			// 重置相机角度--面向玩家角色
+			Camera->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
+			// 隐藏原来的锁定图标
+			HideEnemyLockIcon(OldPlayerTargetEnemy);
+		}
+		else
+		{
+			// 如果原来就是有效的，就更新锁定图标
+			HideEnemyLockIcon(OldPlayerTargetEnemy);
+			ShowEnemyLockIcon(PlayerTargetEnemy);
+		}
+	}
+}
+
+void APlayerCharacterBase::HideEnemyLockIcon(AActor* InTargetEnemy)
+{
+	// 排除ListernServer中其他客户端玩家的情况
+	if (GetNetMode() == NM_ListenServer && GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+	{
+		return;
+	}
+
+	if (InTargetEnemy)
+	{
+		IEnemyInterface::Execute_QuitTargetLocking(InTargetEnemy);
+	}
+}
+
+void APlayerCharacterBase::ShowEnemyLockIcon(AActor* InTargetEnemy)
+{
+	// 排除ListernServer中其他客户端玩家的情况
+	if (GetNetMode() == NM_ListenServer && GetRemoteRole() == ENetRole::ROLE_SimulatedProxy)
+	{
+		return;
+	}
+
+	if (InTargetEnemy)
+	{
+		IEnemyInterface::Execute_SetAsTargetLocking(InTargetEnemy);
+	}
 }
 
 UAbilitySystemComponent* APlayerCharacterBase::GetAbilitySystemComponent() const
@@ -508,23 +582,23 @@ bool APlayerCharacterBase::IsInTargetEnemyLocing_Implementation() const
 
 bool APlayerCharacterBase::IsExactEnenyLocking_Implementation() const
 {
-	return (bTargetingEnemy && PlayerTargetEnemy.IsValid());
+	return (bTargetingEnemy && IsValid(PlayerTargetEnemy));
 }
 
 bool APlayerCharacterBase::GetPlayerTargetEnemy_Implementation(AActor*& OutTargetEnemy)
 {
-	OutTargetEnemy = PlayerTargetEnemy.Get();
-	return PlayerTargetEnemy.IsValid();
+	OutTargetEnemy = PlayerTargetEnemy;
+	return IsValid(PlayerTargetEnemy);
 }
 
 void APlayerCharacterBase::EnterTargetEnemyLocking_Implementation()
 {
-	ActivateEnemyLocking();
+	ServerActivateEnemyLocking();
 }
 
 void APlayerCharacterBase::QuitTargetEnemyLocking_Implementation()
 {
-	QuitEnemyLocking();
+	ServerQuitEnemyLocking();
 }
 
 void APlayerCharacterBase::SwitchEquippedWeapon_Implementation(const FGameplayTag& NewWeaponTag)
@@ -705,7 +779,7 @@ void APlayerCharacterBase::ServerUpgradeEquippedWeapon_Implementation()
 	PlayerWeaponComponent->UpgradeCurrentWeaponLevel();
 }
 
-void APlayerCharacterBase::ActivateEnemyLocking()
+void APlayerCharacterBase::ServerActivateEnemyLocking_Implementation()
 {
 	if (!bTargetingEnemy)
 	{
@@ -719,20 +793,15 @@ void APlayerCharacterBase::ActivateEnemyLocking()
 	}
 }
 
-void APlayerCharacterBase::QuitEnemyLocking()
+void APlayerCharacterBase::ServerQuitEnemyLocking_Implementation()
 {
 	if (bTargetingEnemy)
 	{
-		bTargetingEnemy = false;
-
 		// 解绑代理，重置锁定目标
-		if (PlayerTargetEnemy.IsValid())
+		if (IsValid(PlayerTargetEnemy))
 		{
 			// 隐藏图标，移除原来的绑定
-			if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-			{
-				IEnemyInterface::Execute_QuitTargetLocking(PlayerTargetEnemy.Get());
-			}
+			HideEnemyLockIcon(PlayerTargetEnemy);
 			Cast<IEnemyInterface>(PlayerTargetEnemy.Get())->GetCancelEnemyLockOnEnemyDiedDelegate()->Remove(*EnemyLockDelegateHandle);
 			EnemyLockDelegateHandle = nullptr;
 			UpdateLockEnemy(nullptr);
@@ -740,6 +809,8 @@ void APlayerCharacterBase::QuitEnemyLocking()
 
 		// 关闭检测
 		EnemyLockingSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// 退出锁敌状态
+		bTargetingEnemy = false;
 	}
 }
 
@@ -748,7 +819,8 @@ void APlayerCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(APlayerCharacterBase, bTargetingEnemy);
-	DOREPLIFETIME(APlayerCharacterBase, PlayerTargetEnemy);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(APlayerCharacterBase, PlayerTargetEnemy, COND_None, REPNOTIFY_Always);
 
 }
 
@@ -793,27 +865,24 @@ void APlayerCharacterBase::BeginPlay()
 	Super::BeginPlay();
 
 	// 绑定重叠代理
-	EnemyLockingSphere->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacterBase::OnEnemyLockingSphereBeginOverlap);
-	EnemyLockingSphere->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacterBase::OnEnemyLockingSphereEndOverlap);
+	if (HasAuthority())
+	{
+		EnemyLockingSphere->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacterBase::OnEnemyLockingSphereBeginOverlap);
+		EnemyLockingSphere->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacterBase::OnEnemyLockingSphereEndOverlap);
+	}
+
 }
 
 void APlayerCharacterBase::OnEnemyLockingSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!IsLocallyControlled())
-	{
-		return;
-	}
 	// 如果处于锁敌状态，但是没有锁定的敌人，就锁定这个敌人
 	if (bTargetingEnemy)
 	{
-		if (!PlayerTargetEnemy.IsValid() && OtherActor->Implements<UEnemyInterface>())
+		if (!IsValid(PlayerTargetEnemy) && OtherActor->Implements<UEnemyInterface>())
 		{
 			UpdateLockEnemy(OtherActor);
 			// 显示锁定图标，绑定代理
-			if (GetLocalRole() == ENetRole::ROLE_AutonomousProxy)
-			{
-				IEnemyInterface::Execute_SetAsTargetLocking(PlayerTargetEnemy.Get());
-			}
+			ShowEnemyLockIcon(PlayerTargetEnemy);
 			EnemyLockDelegateHandle = MakeShared<FDelegateHandle>(Cast<IEnemyInterface>(OtherActor)->GetCancelEnemyLockOnEnemyDiedDelegate()->AddUObject(this, &APlayerCharacterBase::FindNewNearstEnemyToLock));
 		}
 	}
@@ -821,10 +890,6 @@ void APlayerCharacterBase::OnEnemyLockingSphereBeginOverlap(UPrimitiveComponent*
 
 void APlayerCharacterBase::OnEnemyLockingSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (!IsLocallyControlled())
-	{
-		return;
-	}
 	// 如果锁定的敌人离开了范围
 	if (bTargetingEnemy && PlayerTargetEnemy == OtherActor)
 	{

@@ -9,7 +9,7 @@
 
 class UInputAction;
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct RPGDEMO_API FAbilityInputAction
 {
 	GENERATED_BODY()

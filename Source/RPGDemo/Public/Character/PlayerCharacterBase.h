@@ -113,10 +113,12 @@ public:
 	void ServerUpgradeEquippedWeapon();
 
 	// 激活目标锁定
-	void ActivateEnemyLocking();
+	UFUNCTION(Server, Reliable)
+	void ServerActivateEnemyLocking();
 
 	// 退出目标锁定
-	void QuitEnemyLocking();
+	UFUNCTION(Server, Reliable)
+	void ServerQuitEnemyLocking();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -159,6 +161,14 @@ private:
 
 	// 解锁相机杆
 	void UnlockCameraBoom();
+
+	// 在本地显示锁定图标
+	void ShowEnemyLockIcon(AActor* InTargetEnemy);
+	// 在本地隐藏锁定图标
+	void HideEnemyLockIcon(AActor* InTargetEnemy);
+
+	UFUNCTION()
+	void OnRep_TargetEnemy(AActor* OldPlayerTargetEnemy);
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "AbilitySystem|AbilisySystemComponent")
 	TObjectPtr<UEnhoneyAbilitySystemComponent> PlayerAbilitySystemComponent;
@@ -196,8 +206,8 @@ protected:
 	bool bTargetingEnemy = false;
 
 	// 当前锁定的敌人
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "EnemyLocking")
-	TWeakObjectPtr<AActor> PlayerTargetEnemy = nullptr;
+	UPROPERTY(ReplicatedUsing = OnRep_TargetEnemy, BlueprintReadOnly, Category = "EnemyLocking")
+	TObjectPtr<AActor> PlayerTargetEnemy = nullptr;
 
 	TSharedPtr<FDelegateHandle> EnemyLockDelegateHandle;
 
