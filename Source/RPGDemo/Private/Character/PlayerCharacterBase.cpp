@@ -31,6 +31,7 @@
 #include "EnhoneyLogChannel.h"
 
 #include "TaskWidgetController.h"
+#include "BuffNiagaraComponent.h"
 
 APlayerCharacterBase::APlayerCharacterBase()
 {
@@ -72,6 +73,11 @@ APlayerCharacterBase::APlayerCharacterBase()
 	MeleeDamageBox = CreateDefaultSubobject<UDamageBoxComponent>(TEXT("MeleeDamageBox"));
 	MeleeDamageBox->SetupAttachment(PlayerWeaponComponent);
 	MeleeDamageBox->SetIsReplicated(true);
+
+	FireShieldNiagara = CreateDefaultSubobject<UBuffNiagaraComponent>(TEXT("FireShieldNiagara"));
+	FireShieldNiagara->SetupAttachment(GetRootComponent());
+	IceShieldNiagara = CreateDefaultSubobject<UBuffNiagaraComponent>(TEXT("IceShieldNiagara"));
+	IceShieldNiagara->SetupAttachment(GetRootComponent());
 }
 
 void APlayerCharacterBase::PossessedBy(AController* NewController)
@@ -265,7 +271,10 @@ void APlayerCharacterBase::EndowPlaeyrVariableAbilityAndLock()
 			{
 				for (const FPlayerAbilityInfo& VariableOffensiveAbilitiy : VariableOffensiveAbilities)
 				{
-					EnhoneyASC->EndowVariableAbility(VariableOffensiveAbilitiy.AbilityClass);
+					if (IsValid(VariableOffensiveAbilitiy.AbilityClass))
+					{
+						EnhoneyASC->EndowVariableAbility(VariableOffensiveAbilitiy.AbilityClass);
+					}
 				}
 			}
 		}
@@ -441,6 +450,11 @@ void APlayerCharacterBase::PlayHitReactionAnim_Implementation(const FHitResult& 
 	}
 }
 
+FOnActorDeathSignature& APlayerCharacterBase::GetOnActorDeathDelegate()
+{
+	return OnActorDeathDelegate;
+}
+
 AEnhoneyPlayerController* APlayerCharacterBase::GetEnhneyPlayerController_Implementation()
 {
 	if (AEnhoneyPlayerController* PlayerController = Cast<AEnhoneyPlayerController>(GetController()))
@@ -453,6 +467,15 @@ AEnhoneyPlayerController* APlayerCharacterBase::GetEnhneyPlayerController_Implem
 bool APlayerCharacterBase::IsPlayerLocallyControlled_Implementation() const
 {
 	return IsLocallyControlled();
+}
+
+UEnhoneyPlayerAbilityInfo* APlayerCharacterBase::GetPlayerAbilityInfoAsset_Implementation() const
+{
+	if (AEnhoneyPlayerState* EnhoneyPlayerState = Cast<AEnhoneyPlayerState>(GetPlayerState()))
+	{
+		return EnhoneyPlayerState->PlayerAbilityInfo;
+	}
+	return nullptr;
 }
 
 bool APlayerCharacterBase::CanAttributeConsumed_Implementation(int32 AttributePointToComsume) const
@@ -562,11 +585,6 @@ void APlayerCharacterBase::PlayerLevelUp_Implementation(int32 TargetLevel)
 	if (AEnhoneyPlayerState* EnhoneyPlayerState = Cast<AEnhoneyPlayerState>(GetPlayerState()))
 	{
 		EnhoneyPlayerState->SetCharacterLevel(TargetLevel);
-		// 播放升级特效
-		/*if (IsValid(LevelUpEffect))
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), LevelUpEffect, GetActorLocation(), FRotator::ZeroRotator, true);
-		}*/
 	}
 }
 
@@ -824,6 +842,14 @@ void APlayerCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 }
 
+void APlayerCharacterBase::AddPlayerLevelInEditor()
+{
+	if (AEnhoneyPlayerState* EnhoneyPlayerState = Cast<AEnhoneyPlayerState>(GetPlayerState()))
+	{
+		EnhoneyPlayerState->AddCharacterLevel(5);
+	}
+}
+
 void APlayerCharacterBase::InitAbilityActorInfo()
 {
 	if (AEnhoneyPlayerState* EnhoneyPlayerState = Cast<AEnhoneyPlayerState>(GetPlayerState()))
@@ -831,6 +857,10 @@ void APlayerCharacterBase::InitAbilityActorInfo()
 		EnhoneyPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(EnhoneyPlayerState, this);
 
 		PlayerAbilitySystemComponent = CastChecked<UEnhoneyAbilitySystemComponent>(EnhoneyPlayerState->GetAbilitySystemComponent());
+
+		// 初始化BuffNiagara组件，必须在AbilityActorInfo初始化之后
+		FireShieldNiagara->InitBuffNiagaraComponent(FEnhoneyGameplayTags::Get().BuffType_FireShield);
+		IceShieldNiagara->InitBuffNiagaraComponent(FEnhoneyGameplayTags::Get().BuffType_IceShield);
 	}
 
 }

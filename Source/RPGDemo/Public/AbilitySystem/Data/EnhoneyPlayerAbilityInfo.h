@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "GameplayTagContainer.h"
+#include "ScalableFloat.h"
 #include "EnhoneyPlayerAbilityInfo.generated.h"
 
 class UEnhoneyAbilityBase;
@@ -32,6 +33,18 @@ public:
 	// 在UI中显示的图标
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PlayerAbility|Config")
 	TObjectPtr<const UTexture2D> SkillIcon = nullptr;
+
+	// 技能解锁的等级
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PlayerAbility|Config")
+	int32 UnlockLevel = 1;
+
+	// 每一级升级需要的技能点数
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PlayerAbility|Config")
+	FScalableFloat SkillPointOnLevelUp;
+
+	// 技能名称
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PlayerAbility|Config")
+	FName AbilityName = TEXT("");
 };
 
 /**

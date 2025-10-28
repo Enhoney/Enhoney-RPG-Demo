@@ -14,6 +14,7 @@ class AEnhoneyPlayerController;
 class UInventoryComponent;
 class UPlayerTaskComponent;
 class UTaskWidgetController;
+class UEnhoneyPlayerAbilityInfo;
 
 // NPC交互委托--传递玩家自己的InventoryComponent
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInteractWithNPCSignature, AActor*);
@@ -39,6 +40,10 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	AEnhoneyPlayerController* GetEnhneyPlayerController();
+
+	// 获取技能配置信息资产
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UEnhoneyPlayerAbilityInfo* GetPlayerAbilityInfoAsset() const;
 
 
 #pragma region PlayerStateAttributes

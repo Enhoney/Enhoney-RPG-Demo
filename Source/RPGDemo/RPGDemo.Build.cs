@@ -25,7 +25,8 @@ public class RPGDemo : ModuleRules
             "GeometryCollectionEngine",
 			"ChaosSolverEngine",
 			"FieldSystemEngine",
-			"NetCore"
+			"NetCore",
+			"Niagara"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

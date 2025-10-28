@@ -65,6 +65,12 @@ void AEnhoneyPlayerState::AddCharacterLevel(int32 LevelToAdd)
 			AddSkillPoint(LevelDifference / SkillPointPerLevel);
 		}
 
+		// 检查并更新可解锁的技能
+		if (UEnhoneyAbilitySystemComponent* EnhoneyASC = Cast<UEnhoneyAbilitySystemComponent>(GetAbilitySystemComponent()))
+		{
+			EnhoneyASC->UpdateVariableAbilityStatusOnLevelUp(CharacterLevel);
+		}
+
 		if (GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_ListenServer)
 		{
 			if (LastCharacterLevel != CharacterLevel)
@@ -82,6 +88,12 @@ void AEnhoneyPlayerState::SetCharacterLevel(int32 LevelToSet)
 	{
 		int32 LastCharacterLevel = CharacterLevel;
 		CharacterLevel = FMath::Clamp(LevelToSet, MinValueOfLevel, MaxValueOfLevel);
+
+		// 检查并更新可解锁的技能
+		if (UEnhoneyAbilitySystemComponent* EnhoneyASC = Cast<UEnhoneyAbilitySystemComponent>(GetAbilitySystemComponent()))
+		{
+			EnhoneyASC->UpdateVariableAbilityStatusOnLevelUp(CharacterLevel);
+		}
 
 		if (GetNetMode() == ENetMode::NM_Standalone || GetNetMode() == ENetMode::NM_ListenServer)
 		{

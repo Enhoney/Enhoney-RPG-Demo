@@ -12,6 +12,8 @@
 #include "InventoryItemInfo.h"
 #include "EnhoneyAbilityType.h"
 #include "TaskSystemComponent.h"
+#include "PlayerInterface.h"
+#include "EnhoneyPlayerAbilityInfo.h"
 
 void UEnhoneyAbilitySystemLibrary::ApplyAttributeEffectToSelf(const UObject* InWorldContextObject, 
 	const TSubclassOf<UGameplayEffect> EffectToApply,
@@ -27,6 +29,30 @@ void UEnhoneyAbilitySystemLibrary::ApplyAttributeEffectToSelf(const UObject* InW
 	AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 }
 
+bool UEnhoneyAbilitySystemLibrary::GetVariableAbilityInfoByTag(const AActor* InAvatarActor, const FGameplayTag& InAbilityTag, FPlayerAbilityInfo& OutAbilityInfo)
+{
+	if (InAvatarActor->Implements<UPlayerInterface>())
+	{
+		if (UEnhoneyPlayerAbilityInfo* PlayerAbilityConfig = IPlayerInterface::Execute_GetPlayerAbilityInfoAsset(InAvatarActor))
+		{
+			return PlayerAbilityConfig->GetOffensiveAbilityInfoByTag(InAbilityTag, OutAbilityInfo);
+		}
+	}
+	return false;
+}
+
+bool UEnhoneyAbilitySystemLibrary::GetVariableAbilityUpgradeCost(const AActor* InAvatarActor, const FGameplayTag& InAbilityTag, int32 InCurrentAbilityLevel, int32 OutSKillPointCost)
+{
+	FPlayerAbilityInfo AbilityInfo;
+	if (UEnhoneyAbilitySystemLibrary::GetVariableAbilityInfoByTag(InAvatarActor, InAbilityTag, AbilityInfo))
+	{
+		// 这里有类型转换
+		OutSKillPointCost = AbilityInfo.SkillPointOnLevelUp.GetValueAtLevel(InCurrentAbilityLevel);
+		return true;
+	}
+	return false;
+}
+
 FGameplayAbilitySpec UEnhoneyAbilitySystemLibrary::GetAbilitySpecByTag(UAbilitySystemComponent* InASC, const FGameplayTag& InAbilityTag)
 {
 	if (UEnhoneyAbilitySystemComponent* EnhoneyASC = Cast<UEnhoneyAbilitySystemComponent>(InASC))
@@ -35,6 +61,15 @@ FGameplayAbilitySpec UEnhoneyAbilitySystemLibrary::GetAbilitySpecByTag(UAbilityS
 		return (OutAbilitySpec == nullptr)? FGameplayAbilitySpec() : *OutAbilitySpec;
 	}
 	return FGameplayAbilitySpec();
+}
+
+bool UEnhoneyAbilitySystemLibrary::GetVariableAbilityStatusByTag(UAbilitySystemComponent* InASC, const FGameplayTag& InAbilityTag, FGameplayTag& OutAbilityStatus)
+{
+	if (UEnhoneyAbilitySystemComponent* EnhoneyASC = Cast<UEnhoneyAbilitySystemComponent>(InASC))
+	{
+		return EnhoneyASC->GetVariableAbilityStatusByTag(InAbilityTag, OutAbilityStatus);
+	}
+	return false;
 }
 
 FGameplayEffectContextHandle UEnhoneyAbilitySystemLibrary::CauseDamageByParams(const FEnhoneyDamageEffectParams& InDamageParams)

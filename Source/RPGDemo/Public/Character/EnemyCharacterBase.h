@@ -83,6 +83,7 @@ public:
 	virtual FVector GetFireSocketLocation_Implementation(FName FireSocketName) override;
 
 	virtual void PlayHitReactionAnim_Implementation(const FHitResult& ImpactResult) override;
+	virtual FOnActorDeathSignature& GetOnActorDeathDelegate() override;
 	/** Combat Interface End*/
 
 	/** Enemy Interface Start*/
@@ -180,6 +181,10 @@ protected:
 	// 当前巡逻点
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	TWeakObjectPtr<AActor> CurrentPatorlTarget;
+
+	// 角色死亡委托
+	UPROPERTY(BlueprintAssignable)
+	FOnActorDeathSignature OnActorDeathDelegate;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Enemy|TargetLock")

@@ -20,6 +20,7 @@ class UEnhoneyWeaponComponent;
 class UDamageBoxComponent;
 class UInventoryComponent;
 class UEnhoneyWidgetControllerBase;
+class UBuffNiagaraComponent;
 
 /**
  * 
@@ -51,11 +52,14 @@ public:
 	virtual FVector GetFireSocketLocation_Implementation(FName FireSocketName) override;
 
 	virtual void PlayHitReactionAnim_Implementation(const FHitResult& ImpactResult) override;
+
+	virtual FOnActorDeathSignature& GetOnActorDeathDelegate() override;
 	/** Combat Interface End*/
 
 	/** PlayerInterface Start*/
 	virtual AEnhoneyPlayerController* GetEnhneyPlayerController_Implementation() override;
 	virtual bool IsPlayerLocallyControlled_Implementation() const override;
+	virtual UEnhoneyPlayerAbilityInfo* GetPlayerAbilityInfoAsset_Implementation() const override;
 
 	virtual bool CanAttributeConsumed_Implementation(int32 AttributePointToComsume) const override;
 	virtual void ConsumeAttributePoint_Implementation(int32 AttributePointToComsume) override;
@@ -121,6 +125,11 @@ public:
 	void ServerQuitEnemyLocking();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	// GM操作，方便调试使用
+	// 增加玩家等级
+	UFUNCTION(BlueprintCallable, meta = (CallInEditor = "true"))
+	void AddPlayerLevelInEditor();
 
 protected:
 	// 初始化ASC
@@ -200,6 +209,13 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon")
 	TObjectPtr<UDamageBoxComponent> MeleeDamageBox;
 
+	/** 两种护盾效果的粒子组件*/
+	UPROPERTY(VisibleAnywhere, Category = "Passive Ability")
+	TObjectPtr<UBuffNiagaraComponent> FireShieldNiagara;
+
+	UPROPERTY(VisibleAnywhere, Category = "Passive Ability")
+	TObjectPtr<UBuffNiagaraComponent> IceShieldNiagara;
+
 protected:
 	// 是否处于锁定敌人状态
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "EnemyLocking")
@@ -215,11 +231,15 @@ protected:
 	UPROPERTY()
 	float EmptyEnemyTime = 0.f;
 
+	// 角色死亡委托
+	UPROPERTY(BlueprintAssignable)
+	FOnActorDeathSignature OnActorDeathDelegate;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Player Ability|Montage|Common HitReaction")
 	TMap<EEnhoneyHitDirection, TObjectPtr<UAnimMontage>> PlayerHitReactionMontages;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	float RotationCurveExponent = 2.f;  // 曲线指数，控制缓动效果
-	
+
 };

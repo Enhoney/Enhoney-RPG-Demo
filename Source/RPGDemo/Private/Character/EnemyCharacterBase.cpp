@@ -106,6 +106,7 @@ bool AEnemyCharacterBase::IsCharacterAlive_Implementation() const
 void AEnemyCharacterBase::CharacterDie_Implementation()
 {
 	EnemyState = EEnemyState::EES_Dead;
+	OnActorDeathDelegate.Broadcast(this);
 
 	// 发放奖励--只在服务器执行
 	if(HasAuthority() && KillerPawn.IsValid())
@@ -171,6 +172,11 @@ void AEnemyCharacterBase::PlayHitReactionAnim_Implementation(const FHitResult& I
 		AnimInstance->Montage_Stop(0.1f);
 		AnimInstance->Montage_Play(HitReactionMontage, 1.f);
 	}
+}
+
+FOnActorDeathSignature& AEnemyCharacterBase::GetOnActorDeathDelegate()
+{
+	return OnActorDeathDelegate;
 }
 
 void AEnemyCharacterBase::SetAsTargetLocking_Implementation()

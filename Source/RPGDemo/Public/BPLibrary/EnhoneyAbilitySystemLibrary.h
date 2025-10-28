@@ -18,6 +18,7 @@ struct FInventoryItem_Economic;
 
 struct FEnhoneyDamageEffectParams;
 struct FPlayerTaskConfigItem;
+struct FPlayerAbilityInfo;
 
 /**
  * 
@@ -31,9 +32,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "EnhoneryAbilitySystemLibrary|Initialize Character Attribute")
 	static void ApplyAttributeEffectToSelf(const UObject* InWorldContextObject, const TSubclassOf<UGameplayEffect> EffectToApply, UAbilitySystemComponent* AbilitySystemComponent, float CharacterLevel = 1);
 
+	// 找到某个可变技能的配置信息
+	UFUNCTION(BlueprintCallable, Category = "EnhoneryAbilitySystemLibrary|Get Ability Info")
+	static bool GetVariableAbilityInfoByTag(const AActor* InAvatarActor, const FGameplayTag& InAbilityTag, FPlayerAbilityInfo& OutAbilityInfo);
+
+	// 获取某个可变技能升级需要的技能点数
+	UFUNCTION(BlueprintCallable, Category = "EnhoneryAbilitySystemLibrary|Get Ability Upgrade Cost")
+	static bool GetVariableAbilityUpgradeCost(const AActor* InAvatarActor, const FGameplayTag& InAbilityTag, int32 InCurrentAbilityLevel, int32 OutSKillPointCost);
+
 	// 根据AbilityTag找到这个AbilitySpec
 	UFUNCTION(BlueprintCallable, Category = "EnhoneryAbilitySystemLibrary|GetAbilitySpec By AbilityTag")
 	static FGameplayAbilitySpec GetAbilitySpecByTag(UAbilitySystemComponent* InASC, const FGameplayTag& InAbilityTag);
+
+	// 根据AbilityTag找到这个技能的状态
+	UFUNCTION(BlueprintCallable, Category = "EnhoneryAbilitySystemLibrary|GetAbilityStatus By AbilityTag")
+	static bool GetVariableAbilityStatusByTag(UAbilitySystemComponent* InASC, const FGameplayTag& InAbilityTag, FGameplayTag& OutAbilityStatus);
 
 	// 施加伤害
 	UFUNCTION(BlueprintCallable, Category = "EnhoneryAbilitySystemLibrary|Cause Damage")

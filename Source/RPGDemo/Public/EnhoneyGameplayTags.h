@@ -27,6 +27,13 @@ public:
 	FGameplayTag InputTag_R;
 
 #pragma endregion InputTag
+
+#pragma region BuffType
+	FGameplayTag BuffType_FireShield;	// 火焰护盾Buff
+	FGameplayTag BuffType_IceShield;	// 冰霜护盾Buff
+
+#pragma endregion BuffType
+			
 	
 #pragma region AbilityStatus
 	// 可变技能的状态
@@ -122,6 +129,13 @@ public:
 
 #pragma region AbilityCooldownTag
 	FGameplayTag Cooldown_Inherent_EnemyLocking;
+
+	FGameplayTag Cooldown_Variable_IceShield;
+	FGameplayTag Cooldown_Variable_FireShield;
+	FGameplayTag Cooldown_Variable_FireBall;
+	FGameplayTag Cooldown_Variable_IceBall;
+	FGameplayTag Cooldown_Variable_StarFallen;
+	FGameplayTag Cooldown_Variable_LimboIce;
 
 #pragma endregion AbilityCooldownTag
 

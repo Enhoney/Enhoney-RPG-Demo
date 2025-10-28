@@ -15,6 +15,8 @@
 
 #include "GameplayEffectTypes.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "EnhoneyAbilitySystemLibrary.h"
+#include "EnhoneyPlayerAbilityInfo.h"
 
 void UPlayingWidgetController::BroadcastInitialValue()
 {
@@ -37,6 +39,12 @@ void UPlayingWidgetController::BroadcastInitialValue()
 
 			OnExpChangedDelegate.Broadcast(PlayerState->GetCurrentExp(), PlayerState->GetExpForLevelUp(PlayerState->GetCharacterLevel()));
 		}
+	}
+
+	// 没做存档，可以省略这一步，可以提高性能
+	if (IsValid(AbilitySystemComponent))
+	{
+		AbilitySystemComponent->BroadcastAllVariableAbility();
 	}
 }
 
@@ -111,6 +119,8 @@ void UPlayingWidgetController::BindCallbacksToDependiencies()
 				{
 					OnArcaneChangedDelegate.Broadcast(NewArcane.NewValue);
 				});
+		// 技能装卸回调
+		AbilitySystemComponent->OnVariabieAbilityInputChangedDelegate.AddUObject(this, &UPlayingWidgetController::HandleVariableAbilityInputChanged);
 	}
 }
 
@@ -186,5 +196,22 @@ void UPlayingWidgetController::ClosePuaseMenu()
 void UPlayingWidgetController::QuitGame()
 {
 	UKismetSystemLibrary::QuitGame(PlayerController, PlayerController, EQuitPreference::Quit, false);
+}
+
+void UPlayingWidgetController::HandleVariableAbilityInputChanged(const FGameplayTag& InAbilityTag, const FGameplayTag& InNewAbilityInputTag, const FGameplayTag& InOldAbilityInputTag)
+{
+	if (InAbilityTag.IsValid())
+	{
+		FPlayerAbilityInfo AbilityInfo;
+		if (UEnhoneyAbilitySystemLibrary::GetVariableAbilityInfoByTag(PlayerState->GetPawn(), InAbilityTag, AbilityInfo))
+		{
+			OnVariableAbilityInputChangedDelegate.Broadcast(
+				AbilityInfo.SkillIcon,
+				InAbilityTag,
+				InNewAbilityInputTag,
+				InOldAbilityInputTag,
+				AbilityInfo.AbilityCooldownTag);
+		}
+	}
 }
 

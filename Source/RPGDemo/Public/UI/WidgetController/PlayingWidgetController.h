@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "EnhoneyWidgetControllerBase.h"
 #include "InventoryComponent.h"
+#include "GameplayTagContainer.h"
 #include "PlayingWidgetController.generated.h"
 
 class UInventoryWidgetController;
@@ -22,6 +23,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCharacterExpChangedSignature, floa
 
 // 暂定菜单打开或者关闭
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGamePauseOpenOrCloseSignature, bool, bOpen);
+
+// 技能输入变化--技能装备到新的输入上
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FVariableAbilityInputChangedSignature, const UTexture2D*, InAbilityIcon, const FGameplayTag&, InAbilityTag,
+	const FGameplayTag&, InNewAbilityInputTag, const FGameplayTag&, InOldAbilityInputTag, const FGameplayTag&, InAbilityCooldownTag);
 
 /**
  * 
@@ -58,6 +63,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void QuitGame();
 
+
+private:
+	// 处理技能装卸的回调
+	void HandleVariableAbilityInputChanged(const FGameplayTag& InAbilityTag, const FGameplayTag& InNewAbilityInputTag, const FGameplayTag& InOldAbilityInputTag);
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -99,4 +108,8 @@ public:
 	// 暂停菜单打开或者关闭
 	UPROPERTY(BlueprintAssignable)
 	FGamePauseOpenOrCloseSignature OnGamePauseDelegate;
+
+	// 技能装卸
+	UPROPERTY(BlueprintAssignable)
+	FVariableAbilityInputChangedSignature OnVariableAbilityInputChangedDelegate;
 };

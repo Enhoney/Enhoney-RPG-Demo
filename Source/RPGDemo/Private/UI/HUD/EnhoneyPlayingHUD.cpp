@@ -64,6 +64,21 @@ UEnhoneyWidgetControllerBase* AEnhoneyPlayingHUD::GetAttributeMenuWidgetControll
 	return AttributeMenuWidgetController;
 }
 
+UEnhoneyWidgetControllerBase* AEnhoneyPlayingHUD::GetSkillMenuWidgetController(const FWidgetControllerParam& InWCParam)
+{
+	if (!IsValid(SkillMenuWidgetController))
+	{
+		SkillMenuWidgetController = NewObject<UEnhoneyWidgetControllerBase>(this, SkillMenuWidgetControllerClass);
+		SkillMenuWidgetController->SetWidgetControllrtParams(InWCParam);
+
+		// 绑定代理，WidgetController开始监听技能的变化
+		SkillMenuWidgetController->BindCallbacksToDependiencies();
+
+	}
+
+	return SkillMenuWidgetController;
+}
+
 UEnhoneyWidgetControllerBase* AEnhoneyPlayingHUD::GetInventoryWidgetController(const FWidgetControllerParam& InWCParam)
 {
 	if (!IsValid(InventoryWidgetController))

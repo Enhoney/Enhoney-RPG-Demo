@@ -6,6 +6,9 @@
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
+// 死亡回调
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorDeathSignature, AActor*, DeadActor);
+
 UINTERFACE(MinimalAPI)
 class UCombatInterface : public UInterface
 {
@@ -38,5 +41,8 @@ public:
 	// 播放受击动画
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void PlayHitReactionAnim(const FHitResult& ImpactResult);
+
+	// 获取角色死亡委托
+	virtual FOnActorDeathSignature& GetOnActorDeathDelegate() = 0;
 
 };

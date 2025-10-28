@@ -39,6 +39,14 @@ UEnhoneyWidgetControllerBase* UCharacterMenuWidgetController::GetAttributeMenuWi
 
 UEnhoneyWidgetControllerBase* UCharacterMenuWidgetController::GetSkillMenuWidgetController()
 {
+	if (IsValid(PlayerController))
+	{
+		if (AEnhoneyPlayingHUD* HUD = Cast<AEnhoneyPlayingHUD>(PlayerController->GetHUD()))
+		{
+			FWidgetControllerParam WCParam(PlayerController, PlayerState, AbilitySystemComponent, AttributeSet);
+			return HUD->GetSkillMenuWidgetController(WCParam);
+		}
+	}
 	return nullptr;
 }
 

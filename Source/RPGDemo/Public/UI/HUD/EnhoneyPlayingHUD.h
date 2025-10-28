@@ -44,6 +44,9 @@ public:
 	// 获取AttributeMenuWidgetController
 	UFUNCTION(BlueprintCallable)
 	UEnhoneyWidgetControllerBase* GetAttributeMenuWidgetController(const FWidgetControllerParam& InWCParam);
+	// 获取SkillMenuWidgetController
+	UFUNCTION(BlueprintCallable)
+	UEnhoneyWidgetControllerBase* GetSkillMenuWidgetController(const FWidgetControllerParam& InWCParam);
 	// 获取InventoryWidgetController
 	UFUNCTION(BlueprintCallable)
 	UEnhoneyWidgetControllerBase* GetInventoryWidgetController(const FWidgetControllerParam& InWCParam);
@@ -116,6 +119,12 @@ private:
 	TSubclassOf<UEnhoneyWidgetControllerBase> AttributeMenuWidgetControllerClass;
 	UPROPERTY()
 	TObjectPtr<UEnhoneyWidgetControllerBase> AttributeMenuWidgetController;
+
+	// SkillMenuWidgetController
+	UPROPERTY(EditDefaultsOnly, Category = "EnhoneyUserWidget|WidgetController")
+	TSubclassOf<UEnhoneyWidgetControllerBase> SkillMenuWidgetControllerClass;
+	UPROPERTY()
+	TObjectPtr<UEnhoneyWidgetControllerBase> SkillMenuWidgetController;
 
 	// InventoryWidgetController
 	UPROPERTY(EditDefaultsOnly, Category = "EnhoneyUserWidget|WidgetController")

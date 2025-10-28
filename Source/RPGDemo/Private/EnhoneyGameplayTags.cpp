@@ -20,6 +20,13 @@ void FEnhoneyGameplayTags::InitializeGameplayTags()
 
 #pragma endregion InputTag
 
+#pragma region BuffType
+	EnhoneyGameplayTags.BuffType_FireShield =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("BuffType.FireShield"), FString("Fire Shield Buff Type"));
+	EnhoneyGameplayTags.BuffType_IceShield =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("BuffType.IceShield"), FString("Ice Shield Buff Type"));
+#pragma endregion BuffType
+
 #pragma region AbilityStatus
 	// 可变技能的状态
 	EnhoneyGameplayTags.AbilityStatus_Locked = 
@@ -153,6 +160,18 @@ void FEnhoneyGameplayTags::InitializeGameplayTags()
 #pragma region AbilityCooldownTag
 	EnhoneyGameplayTags.Cooldown_Inherent_EnemyLocking =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.Inherent.EnemyLocking"), FString("EnemyLocking Ability Cooldown Tag"));
+	EnhoneyGameplayTags.Cooldown_Variable_IceShield =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.Variable.IceShield"), FString("IceShield Ability Cooldown Tag"));
+	EnhoneyGameplayTags.Cooldown_Variable_FireShield =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.Variable.FireShield"), FString("FireShield Ability Cooldown Tag"));
+	EnhoneyGameplayTags.Cooldown_Variable_FireBall =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.Variable.FireBall"), FString("FireBall Ability Cooldown Tag"));
+	EnhoneyGameplayTags.Cooldown_Variable_IceBall =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.Variable.IceBall"), FString("IceBall Ability Cooldown Tag"));
+	EnhoneyGameplayTags.Cooldown_Variable_StarFallen =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.Variable.StarFallen"), FString("StarFallen Ability Cooldown Tag"));
+	EnhoneyGameplayTags.Cooldown_Variable_LimboIce =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Cooldown.Variable.LimboIce"), FString("LimboIce Ability Cooldown Tag"));
 
 
 #pragma endregion AbilityCooldownTag

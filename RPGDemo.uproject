@@ -18,7 +18,8 @@
 				"GeometryCollectionEngine",
 				"ChaosSolverEngine",
 				"FieldSystemEngine",
-				"NetCore"
+				"NetCore",
+				"Niagara"
 			]
 		}
 	],
