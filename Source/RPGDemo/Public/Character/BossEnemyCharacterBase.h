@@ -25,6 +25,10 @@ public:
 	virtual void MulticastUpdateHealthBar_Implementation(float NewCurrentHealth, float NewCurrentMaxHealth) override;
 	/** Enemy Interface End*/
 
+	/** Combat Interfce Start*/
+	virtual void CharacterDie_Implementation() override;
+	/** Combat Interfce End*/
+
 	/** Boss Interface Start*/
 	virtual void TestFunc_Implementation() override;
 	/** Boss Interface End*/
@@ -53,7 +57,7 @@ public:
 
 protected:
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Invaders")
-	TArray<TWeakObjectPtr<ACharacter>> Invaders;
+	TArray<ACharacter*> Invaders;
 
 	// BOSS名字
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BossName")

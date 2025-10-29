@@ -51,6 +51,20 @@ void ABossEnemyCharacterBase::MulticastUpdateHealthBar_Implementation(float NewC
 	}
 }
 
+void ABossEnemyCharacterBase::CharacterDie_Implementation()
+{
+	Super::CharacterDie_Implementation();
+	// 死亡时，隐藏所有入侵者的BOSS血条
+	InvaderSphereCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if (!Invaders.IsEmpty())
+	{
+		for (ACharacter* InvadeCharacter : Invaders)
+		{
+			MulticastSetBossHealthBarVisibility(InvadeCharacter, false);
+		}
+	}
+}
+
 void ABossEnemyCharacterBase::TestFunc_Implementation()
 {
 
@@ -69,12 +83,12 @@ void ABossEnemyCharacterBase::OnPlayerCharacterStartInvade(UPrimitiveComponent* 
 	{
 		if (OtherActor->Implements<UPlayerInterface>())
 		{
-			TWeakObjectPtr<ACharacter> InvaderEnter = Cast<ACharacter>(OtherActor);
+			ACharacter* InvaderEnter = Cast<ACharacter>(OtherActor);
 
-			Invaders.AddUnique(InvaderEnter);
+			Invaders.Add(InvaderEnter);
 
 			// 显示BOS血条
-			MulticastSetBossHealthBarVisibility(InvaderEnter.Get(), true);
+			MulticastSetBossHealthBarVisibility(InvaderEnter, true);
 		}
 	}
 }
@@ -85,12 +99,12 @@ void ABossEnemyCharacterBase::OnPlayerCharacterQuitInvade(UPrimitiveComponent* O
 	{
 		if (OtherActor->Implements<UPlayerInterface>())
 		{
-			TWeakObjectPtr<ACharacter> InvaderQuit = Cast<ACharacter>(OtherActor);
+			ACharacter* InvaderQuit = Cast<ACharacter>(OtherActor);
 
 			// 隐藏BOSS血条
-			MulticastSetBossHealthBarVisibility(InvaderQuit.Get(), false);
+			MulticastSetBossHealthBarVisibility(InvaderQuit, false);
 
-			Invaders.RemoveSingle(InvaderQuit);
+			Invaders.Remove(InvaderQuit);
 		}
 	}
 }

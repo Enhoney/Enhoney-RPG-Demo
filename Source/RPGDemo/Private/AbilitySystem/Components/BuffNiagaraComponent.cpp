@@ -23,7 +23,7 @@ void UBuffNiagaraComponent::InitBuffNiagaraComponent(const FGameplayTag& InBuffT
 
 void UBuffNiagaraComponent::OnOwnerDeath(AActor* OwnerActor)
 {
-	// ½ÇÉ«ËÀÍö£¬Òş²Ø×é¼ş
+	// è§’è‰²æ­»äº¡ï¼Œéšè—ç»„ä»¶
 	Deactivate();
 }
 
@@ -38,6 +38,8 @@ void UBuffNiagaraComponent::HandleBuffNiagara(const FGameplayTag InBuffTypeTag, 
 		else
 		{
 			Deactivate();
+			DestroyInstanceNotComponent();
+
 		}
 	}
 }

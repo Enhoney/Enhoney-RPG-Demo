@@ -310,7 +310,7 @@ void AEnhoneyPlayerController::TryInteractWithNPC()
 
 void AEnhoneyPlayerController::AbilityInputReleased(FGameplayTag InAbilityInputTag)
 {
-	if(!GetEnhoneyAbilitySystemComponent())
+	if(GetEnhoneyAbilitySystemComponent())
 	{
 		GetEnhoneyAbilitySystemComponent()->AbilityInputTagReleased(InAbilityInputTag);
 	}
