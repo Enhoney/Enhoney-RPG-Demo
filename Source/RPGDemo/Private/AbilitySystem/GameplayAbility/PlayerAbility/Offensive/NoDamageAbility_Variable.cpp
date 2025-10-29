@@ -24,7 +24,7 @@ void UNoDamageAbility_Variable::ApplyBuffEffectToSelf()
 
 float UNoDamageAbility_Variable::GetBuffEffectValue(int32 InAbilityLevel) const
 {
-	// ´ÓÅäÖÃµÄFScalableFloatÖĞ»ñÈ¡ÊıÖµ
+	// ä»é…ç½®çš„FScalableFloatä¸­è·å–æ•°å€¼
 	if (BuffEffect.IsValid())
 	{
 		return BuffEffect.GetValueAtLevel(FMath::Clamp(InAbilityLevel, 1, MaxAbilityLevel));
@@ -34,7 +34,7 @@ float UNoDamageAbility_Variable::GetBuffEffectValue(int32 InAbilityLevel) const
 
 float UNoDamageAbility_Variable::GetAbilityCooldownTime(int32 InAbilityLevel) const
 {
-	// ´ÓÅäÖÃµÄFScalableFloatÖĞ»ñÈ¡ÊıÖµ
+	// ä»é…ç½®çš„FScalableFloatä¸­è·å–æ•°å€¼
 	if (AbilityCooldownTime.IsValid())
 	{
 		return AbilityCooldownTime.GetValueAtLevel(FMath::Clamp(InAbilityLevel, 1, MaxAbilityLevel));
@@ -44,7 +44,7 @@ float UNoDamageAbility_Variable::GetAbilityCooldownTime(int32 InAbilityLevel) co
 
 float UNoDamageAbility_Variable::GetAbilityManaOrManeCost(int32 InAbilityLevel) const
 {
-	// ´ÓÅäÖÃµÄFScalableFloatÖĞ»ñÈ¡ÊıÖµ
+	// ä»é…ç½®çš„FScalableFloatä¸­è·å–æ•°å€¼
 	if (AbilityManaOrManeCost.IsValid())
 	{
 		return AbilityManaOrManeCost.GetValueAtLevel(FMath::Clamp(InAbilityLevel, 1, MaxAbilityLevel));

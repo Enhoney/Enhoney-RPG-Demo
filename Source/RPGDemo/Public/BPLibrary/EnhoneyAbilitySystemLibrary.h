@@ -38,7 +38,7 @@ public:
 
 	// 获取某个可变技能升级需要的技能点数
 	UFUNCTION(BlueprintCallable, Category = "EnhoneryAbilitySystemLibrary|Get Ability Upgrade Cost")
-	static bool GetVariableAbilityUpgradeCost(const AActor* InAvatarActor, const FGameplayTag& InAbilityTag, int32 InCurrentAbilityLevel, int32 OutSKillPointCost);
+	static bool GetVariableAbilityUpgradeCost(const AActor* InAvatarActor, const FGameplayTag& InAbilityTag, int32 InCurrentAbilityLevel, int32& OutSKillPointCost);
 
 	// 根据AbilityTag找到这个AbilitySpec
 	UFUNCTION(BlueprintCallable, Category = "EnhoneryAbilitySystemLibrary|GetAbilitySpec By AbilityTag")

@@ -15,21 +15,21 @@ class RPGDEMO_API UEnhoneyAbilityBase : public UGameplayAbility
 	GENERATED_BODY()
 
 public:
-	// »ñÈ¡µ±Ç°µÈ¼¶µÄÃèÊöĞÅÏ¢
-	virtual void GetAbilityLevelDescription(UAbilitySystemComponent* InASC, FString& OutDescription) const;
+	// è·å–å½“å‰ç­‰çº§çš„æè¿°ä¿¡æ¯
+	virtual void GetAbilityLevelDescription(UAbilitySystemComponent* InASC, FString& OutDescription, int32 InAbilityCurrentLevel) const;
 
-	// »ñÈ¡ÏÂÒ»µÈ¼¶µÄÃèÊöĞÅÏ¢
-	virtual void GetNextAbilityLevelDescription(UAbilitySystemComponent* InASC, FString& OutDescription) const;
+	// è·å–ä¸‹ä¸€ç­‰çº§çš„æè¿°ä¿¡æ¯
+	virtual void GetNextAbilityLevelDescription(UAbilitySystemComponent* InASC, FString& OutDescription, int32 InAbilityCurrentLevel) const;
 
 protected:
-	// »ñÈ¡Ä³Ò»µÈ¼¶µÄÃèÊöĞÅÏ¢--ÒÑ½âËø»òÕßÒÑ×°±¸×´Ì¬
+	// è·å–æŸä¸€ç­‰çº§çš„æè¿°ä¿¡æ¯--å·²è§£é”æˆ–è€…å·²è£…å¤‡çŠ¶æ€
 	virtual void GetAbilityDescOnLevel(UAbilitySystemComponent* InASC, int32 InAbilityLevel, FString& OutDescription) const;
 
 private:
 	void GetAbilityDescOnLockedOrEligible(UAbilitySystemComponent* InASC, FString& OutDescription, const FGameplayTag& InAbilityStatus) const;
 
 protected:
-	// ×î´óµÈ¼¶Ô¼Êø
+	// æœ€å¤§ç­‰çº§çº¦æŸ
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	int32 MaxAbilityLevel = 5;
 	

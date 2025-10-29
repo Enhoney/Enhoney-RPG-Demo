@@ -41,7 +41,7 @@ bool UEnhoneyAbilitySystemLibrary::GetVariableAbilityInfoByTag(const AActor* InA
 	return false;
 }
 
-bool UEnhoneyAbilitySystemLibrary::GetVariableAbilityUpgradeCost(const AActor* InAvatarActor, const FGameplayTag& InAbilityTag, int32 InCurrentAbilityLevel, int32 OutSKillPointCost)
+bool UEnhoneyAbilitySystemLibrary::GetVariableAbilityUpgradeCost(const AActor* InAvatarActor, const FGameplayTag& InAbilityTag, int32 InCurrentAbilityLevel, int32& OutSKillPointCost)
 {
 	FPlayerAbilityInfo AbilityInfo;
 	if (UEnhoneyAbilitySystemLibrary::GetVariableAbilityInfoByTag(InAvatarActor, InAbilityTag, AbilityInfo))

@@ -7,7 +7,7 @@
 #include "EnhoneyPlayerAbilityInfo.h"
 #include "EnhoneyAbilitySystemComponent.h"
 
-void UEnhoneyAbilityBase::GetAbilityLevelDescription(UAbilitySystemComponent* InASC, FString& OutDescription) const
+void UEnhoneyAbilityBase::GetAbilityLevelDescription(UAbilitySystemComponent* InASC, FString& OutDescription, int32 InAbilityCurrentLevel) const
 {
 	// 找到这个技能的状态
 	FGameplayTag AbilityStatsus;
@@ -25,11 +25,11 @@ void UEnhoneyAbilityBase::GetAbilityLevelDescription(UAbilitySystemComponent* In
 	}
 
 	// 走到这里说明技能已经解锁或装备
-	GetAbilityDescOnLevel(InASC, GetAbilityLevel(), OutDescription);
+	GetAbilityDescOnLevel(InASC, InAbilityCurrentLevel, OutDescription);
 	
 }
 
-void UEnhoneyAbilityBase::GetNextAbilityLevelDescription(UAbilitySystemComponent* InASC, FString& OutDescription) const
+void UEnhoneyAbilityBase::GetNextAbilityLevelDescription(UAbilitySystemComponent* InASC, FString& OutDescription, int32 InAbilityCurrentLevel) const
 {
 	// 找到这个技能的状态
 	FGameplayTag AbilityStatsus;
@@ -47,14 +47,14 @@ void UEnhoneyAbilityBase::GetNextAbilityLevelDescription(UAbilitySystemComponent
 	}
 
 	// 看看现在是否满级
-	if (GetAbilityLevel() >= MaxAbilityLevel)
+	if (InAbilityCurrentLevel >= MaxAbilityLevel)
 	{
 		OutDescription = FString::Printf(TEXT("<Golden>已满级</>"));
 		return;
 	}
 
 	// 没有满级，就显示下一级的信息
-	GetAbilityDescOnLevel(InASC, GetAbilityLevel() + 1, OutDescription);
+	GetAbilityDescOnLevel(InASC, InAbilityCurrentLevel + 1, OutDescription);
 }
 
 void UEnhoneyAbilityBase::GetAbilityDescOnLevel(UAbilitySystemComponent* InASC, int32 InAbilityLevel, FString& OutDescription) const

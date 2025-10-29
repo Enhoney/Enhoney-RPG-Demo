@@ -305,7 +305,7 @@ bool UEnhoneyAbilitySystemComponent::GetVariableAbilityCurrentDescriptionByTag(c
 	{
 		if (UEnhoneyAbilityBase* Ability = Cast<UEnhoneyAbilityBase>(AbilitySpec->Ability))
 		{
-			Ability->GetAbilityLevelDescription(this, OutAbilityDescription);
+			Ability->GetAbilityLevelDescription(this, OutAbilityDescription, AbilitySpec->Level);
 			return true;
 		}
 	}
@@ -319,7 +319,7 @@ bool UEnhoneyAbilitySystemComponent::GetVariableAbilityNextLevelDescriptionByTag
 	{
 		if (UEnhoneyAbilityBase* Ability = Cast<UEnhoneyAbilityBase>(AbilitySpec->Ability))
 		{
-			Ability->GetNextAbilityLevelDescription(this, OutAbilityDescription);
+			Ability->GetNextAbilityLevelDescription(this, OutAbilityDescription, AbilitySpec->Level);
 			return true;
 		}
 	}
