@@ -105,6 +105,7 @@ public:
 	virtual void GetTargetEnemyLocation_Implementation(FVector& OutLocation) const override;
 
 	virtual FCancelEnemyLockOnEnemyDiedSignature* GetCancelEnemyLockOnEnemyDiedDelegate() override;
+	virtual USceneComponent* GetTargetingComponent_Implementation() override;
 	/** Enemy Interface End*/
 
 	UEnemyAttributeSet* GetEnemyAttributeSet() const;

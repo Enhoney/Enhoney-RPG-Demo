@@ -95,5 +95,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void GetTargetEnemyLocation(FVector& OutLocation) const;
 
+	// 获取索敌组件
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	USceneComponent* GetTargetingComponent();
+
 	virtual FCancelEnemyLockOnEnemyDiedSignature* GetCancelEnemyLockOnEnemyDiedDelegate();
 };

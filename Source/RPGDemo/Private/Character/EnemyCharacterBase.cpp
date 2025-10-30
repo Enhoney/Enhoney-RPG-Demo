@@ -297,6 +297,18 @@ FCancelEnemyLockOnEnemyDiedSignature* AEnemyCharacterBase::GetCancelEnemyLockOnE
 	return &OnCancelLockWhenEnemyDied;
 }
 
+USceneComponent* AEnemyCharacterBase::GetTargetingComponent_Implementation()
+{
+	if (IsValid(EnemyTargetWidgetComponent))
+	{
+		return EnemyTargetWidgetComponent;
+	}
+	else
+	{
+		return GetRootComponent();
+	}
+}
+
 UEnemyAttributeSet* AEnemyCharacterBase::GetEnemyAttributeSet() const
 {
 	return EnemyAttributeSet;

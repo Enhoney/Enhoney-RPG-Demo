@@ -114,6 +114,16 @@ void UDamageBoxComponent::OnDamageBoxBeginOverlap(UPrimitiveComponent* Overlappe
 			// 造成伤害
 			UEnhoneyAbilitySystemLibrary::CauseDamageByParams(DamageEffectParams);
 
+
+			// 判定是否为幽冥寒冰技能，如果是的话，判断命中的目标是否为既定目标，如果是的话，销毁伤害盒子，如果不是的话，直接返回
+			if (DamageEffectParams.AbilityTags.GetByIndex(0).MatchesTagExact(FEnhoneyGameplayTags::Get().Ability_Offensive_Variable_LimboIce))
+			{
+				if (OtherActor != DamageEffectParams.TargetASC->GetAvatarActor())
+				{
+					return;
+				}
+			}
+
 			// 在命中之后，立即取消碰撞
 			SetCombatBoxCollisionEnable(false);
 
