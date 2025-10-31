@@ -850,6 +850,22 @@ void APlayerCharacterBase::AddPlayerLevelInEditor()
 	}
 }
 
+void APlayerCharacterBase::AddAttributePointInEditor()
+{
+	if (AEnhoneyPlayerState* EnhoneyPlayerState = Cast<AEnhoneyPlayerState>(GetPlayerState()))
+	{
+		EnhoneyPlayerState->AddAttributePoint(5);
+	}
+}
+
+void APlayerCharacterBase::AddSkillPointInEditor()
+{
+	if (AEnhoneyPlayerState* EnhoneyPlayerState = Cast<AEnhoneyPlayerState>(GetPlayerState()))
+	{
+		EnhoneyPlayerState->AddSkillPoint(5);
+	}
+}
+
 void APlayerCharacterBase::InitAbilityActorInfo()
 {
 	if (AEnhoneyPlayerState* EnhoneyPlayerState = Cast<AEnhoneyPlayerState>(GetPlayerState()))

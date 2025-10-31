@@ -126,10 +126,19 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+#pragma region GMOperations
 	// GM操作，方便调试使用
 	// 增加玩家等级
 	UFUNCTION(BlueprintCallable, meta = (CallInEditor = "true"))
 	void AddPlayerLevelInEditor();
+	// 增加属性点
+	UFUNCTION(BlueprintCallable, meta = (CallInEditor = "true"))
+	void AddAttributePointInEditor();
+	// 增加技能点
+	UFUNCTION(BlueprintCallable, meta = (CallInEditor = "true"))
+	void AddSkillPointInEditor();
+	
+#pragma endregion GMOperations
 
 protected:
 	// 初始化ASC

@@ -2,10 +2,67 @@
 
 
 #include "PlayerAbility/Offensive/VariableSkills/StarFallenAbility.h"
+#include "CombatInterface.h"
+#include "PlayerInterface.h"
+#include "EnemyInterface.h"
+#include "CommonAlgorithmLibrary.h"
+#include "Actor/FallenStarBase.h"
+
+bool UStarFallenAbility::SpawnFallenStarToEnemy(FName EnemyFallenStarSocketName)
+{
+	// 在服务器生成
+	const bool bServer = GetAvatarActorFromActorInfo()->HasAuthority();
+	if (!bServer)
+	{
+		return false;
+	}
+	check(FallenStarActorClass);
+
+	if (GetAvatarActorFromActorInfo()->Implements<UCombatInterface>())
+	{
+
+		// 找到目标敌人
+		AActor* TargetActor = nullptr;
+		if (GetAvatarActorFromActorInfo()->Implements<UPlayerInterface>())
+		{
+			IPlayerInterface::Execute_GetPlayerTargetEnemy(GetAvatarActorFromActorInfo(), TargetActor);
+		}
+
+		if (!IsValid(TargetActor))
+		{
+			// 如果没有锁定敌人，就找到最近的敌人，向他发射
+			TargetActor = UCommonAlgorithmLibrary::GetNearstEnemyInRadius(GetAvatarActorFromActorInfo(), 2000.f, false);
+		}
+
+		// 找不到目标敌人，返回false
+		if (!IsValid(TargetActor))
+		{
+			return false;
+		}
+		// 得到生成位置
+		FVector SpawneLocation = ICombatInterface::Execute_GetFireSocketLocation(TargetActor, EnemyFallenStarSocketName);
+		FTransform SpawnActorTransform(FRotator::ZeroRotator, SpawneLocation);
+
+		AFallenStarBase* FallenStar = GetWorld()->SpawnActorDeferred<AFallenStarBase>(FallenStarActorClass, SpawnActorTransform);
+
+		// 设置施加伤害的GE参数
+		FallenStar->TmpDamageEffectParams = MakeDamageEffectParams(nullptr, false);
+		// 是否满级了，切换陨星特效
+		FallenStar->SetFallenStarNiagaraIfOnMaxLevel(GetAbilityLevel() >= MaxAbilityLevel);
+
+		FallenStar->FinishSpawning(SpawnActorTransform);
+
+		return true;
+
+	}
+
+
+	return false;
+}
 
 void UStarFallenAbility::GetAbilityDescOnLevel(UAbilitySystemComponent* InASC, int32 InAbilityLevel, FString& OutDescription) const
 {
-	if (InAbilityLevel >= MaxAbilityLevel)
+	if (InAbilityLevel > MaxAbilityLevel)
 	{
 		return;
 	}

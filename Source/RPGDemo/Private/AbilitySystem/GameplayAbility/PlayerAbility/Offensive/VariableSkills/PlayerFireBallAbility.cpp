@@ -6,7 +6,7 @@
 void UPlayerFireBallAbility::GetAbilityDescOnLevel(UAbilitySystemComponent* InASC, int32 InAbilityLevel, FString& OutDescription) const
 {
 
-	if (InAbilityLevel >= MaxAbilityLevel)
+	if (InAbilityLevel > MaxAbilityLevel)
 	{
 		return;
 	}
