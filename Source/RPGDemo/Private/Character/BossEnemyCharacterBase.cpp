@@ -12,6 +12,8 @@
 #include "PlayingWidgetController.h"
 #include "CommonAlgorithmLibrary.h"
 #include "EnemyAttributeSet.h"
+#include "EnhoneyAbilitySystemComponent.h"
+
 
 ABossEnemyCharacterBase::ABossEnemyCharacterBase()
 {
@@ -65,9 +67,33 @@ void ABossEnemyCharacterBase::CharacterDie_Implementation()
 	}
 }
 
-void ABossEnemyCharacterBase::TestFunc_Implementation()
+EBossPhase ABossEnemyCharacterBase::GetBossPhase_Implementation() const
 {
+	return BossPhase;
+}
 
+void ABossEnemyCharacterBase::SwitchToPhaseTwoForAbility_Implementation()
+{
+	// 尝试激活切换阶段的技能
+	if (IsValid(EnemyAbilitySystemComponent))
+	{
+		BossPhase = EBossPhase::EBP_Phase2;
+		EnemyAbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(FEnhoneyGameplayTags::Get().Ability_Offensive_Inherent_Common_SwitchPhase));
+	}
+}
+
+void ABossEnemyCharacterBase::SwitchToPhaseTwoForBuff_Implementation()
+{
+	if (IsValid(EnemyAbilitySystemComponent))
+	{
+		// 移除一阶段Buff
+		EnemyAbilitySystemComponent->RemoveActiveGameplayEffect(PhaseBuffHandle);
+		// 施加二阶段Buff
+		FGameplayEffectContextHandle BuffEffectHandle = EnemyAbilitySystemComponent->MakeEffectContext();
+		BuffEffectHandle.AddSourceObject(this);
+		FGameplayEffectSpecHandle BuffEffectSpecHandle = EnemyAbilitySystemComponent->MakeOutgoingSpec(BuffOnPhase2, 1, BuffEffectHandle);
+		PhaseBuffHandle = EnemyAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*BuffEffectSpecHandle.Data);
+	}
 }
 
 void ABossEnemyCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -75,6 +101,7 @@ void ABossEnemyCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABossEnemyCharacterBase, Invaders);
+	DOREPLIFETIME(ABossEnemyCharacterBase, BossPhase);
 }
 
 void ABossEnemyCharacterBase::OnPlayerCharacterStartInvade(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -89,6 +116,13 @@ void ABossEnemyCharacterBase::OnPlayerCharacterStartInvade(UPrimitiveComponent* 
 
 			// 显示BOS血条
 			MulticastSetBossHealthBarVisibility(InvaderEnter, true);
+
+			// 如果这个时候处于待机状态，就切换到战斗状态，并将这个入侵者设为战斗目标
+			if (EnemyState == EEnemyState::EES_Rest)
+			{
+				EnemyState = EEnemyState::EES_Combat;
+				CombatTarget = InvaderEnter;
+			}
 		}
 	}
 }
@@ -105,6 +139,12 @@ void ABossEnemyCharacterBase::OnPlayerCharacterQuitInvade(UPrimitiveComponent* O
 			MulticastSetBossHealthBarVisibility(InvaderQuit, false);
 
 			Invaders.Remove(InvaderQuit);
+
+			// 如果跑出去的是当前攻击目标，就找下一个目标来攻击
+			if (EnemyState == EEnemyState::EES_Combat && InvaderQuit == CombatTarget)
+			{
+				FindNextInvaderAsTarget();
+			}
 		}
 	}
 }
@@ -115,6 +155,31 @@ void ABossEnemyCharacterBase::BeginPlay()
 
 	InvaderSphereCollision->OnComponentBeginOverlap.AddDynamic(this, &ABossEnemyCharacterBase::OnPlayerCharacterStartInvade);
 	InvaderSphereCollision->OnComponentEndOverlap.AddDynamic(this, &ABossEnemyCharacterBase::OnPlayerCharacterQuitInvade);
+
+	// 施加一阶段的Buff
+	if (EnemyAbilitySystemComponent)
+	{
+		FGameplayEffectContextHandle BuffEffectHandle = EnemyAbilitySystemComponent->MakeEffectContext();
+		BuffEffectHandle.AddSourceObject(this);
+		FGameplayEffectSpecHandle BuffEffectSpecHandle = EnemyAbilitySystemComponent->MakeOutgoingSpec(BuffOnPhase1, 1, BuffEffectHandle);
+		PhaseBuffHandle = EnemyAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*BuffEffectSpecHandle.Data);
+	}
+
+}
+
+void ABossEnemyCharacterBase::FindNextInvaderAsTarget()
+{
+	// 如果没有入侵者了，就进入逃跑状态
+	if (Invaders.IsEmpty())
+	{
+		CombatTarget = nullptr;
+		EnemyState = EEnemyState::EES_Flee;
+	}
+	else
+	{
+		// 还有入侵者，就找到下一个作为攻击目标
+		CombatTarget = Invaders[0];
+	}
 }
 
 void ABossEnemyCharacterBase::MulticastUpdateBossHealthBar_Implementation(FName InBossName, float NewCurrentHealth, float NewCurrentMaxHealth)

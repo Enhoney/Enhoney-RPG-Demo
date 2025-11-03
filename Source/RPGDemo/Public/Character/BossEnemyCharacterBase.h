@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "EnemyCharacterBase.h"
 #include "BossInterface.h"
+#include "ActiveGameplayEffectHandle.h"
 #include "BossEnemyCharacterBase.generated.h"
 
 class USphereComponent;
+
 
 /**
  * 
@@ -30,7 +32,9 @@ public:
 	/** Combat Interfce End*/
 
 	/** Boss Interface Start*/
-	virtual void TestFunc_Implementation() override;
+	virtual EBossPhase GetBossPhase_Implementation() const override;
+	virtual void SwitchToPhaseTwoForAbility_Implementation() override;
+	virtual void SwitchToPhaseTwoForBuff_Implementation() override;
 	/** Boss Interface End*/
 
 
@@ -44,7 +48,7 @@ public:
 	UFUNCTION()
 	void OnPlayerCharacterQuitInvade(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-public:
+protected:
 	virtual void BeginPlay() override;
 
 	// 显示或者隐藏BOSS血条
@@ -55,13 +59,34 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastUpdateBossHealthBar(FName InBossName, float NewCurrentHealth, float NewCurrentMaxHealth);
 
+	// 找到下一个入侵者作为攻击目标
+	void FindNextInvaderAsTarget();
+
 protected:
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Invaders")
 	TArray<ACharacter*> Invaders;
+	// 出生点
+	UPROPERTY(EditInstanceOnly, Category = "BirthPoint")
+	TWeakObjectPtr<AActor> BirthPoint;
+
+	// BOSS当前阶段
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "BossPhase")
+	EBossPhase BossPhase = EBossPhase::EBP_Phase1;
+
+	// 一阶段的Buff
+	UPROPERTY(EditDefaultsOnly, Category = "BossPhase")
+	TSubclassOf<UGameplayEffect> BuffOnPhase1;
+	// 二阶段的Buff
+	UPROPERTY(EditDefaultsOnly, Category = "BossPhase")
+	TSubclassOf<UGameplayEffect> BuffOnPhase2;
+	// Buff的Spec，用于
+	UPROPERTY()
+	FActiveGameplayEffectHandle PhaseBuffHandle;
 
 	// BOSS名字
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BossName")
 	FName BossName = TEXT("BOSS");
+
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "ScopeOfInvasion")

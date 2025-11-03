@@ -97,6 +97,8 @@ public:
 	FGameplayTag Ability_Offensive_Inherent_LittleDragon_FireBall;
 	FGameplayTag Ability_Offensive_Inherent_LittleDragon_FrostBall;
 	FGameplayTag Ability_Offensive_Inherent_LittleDragon_Melee;
+	// Boss技能
+	FGameplayTag Ability_Offensive_Inherent_Common_SwitchPhase;		// 切换到二阶段
 
 	// 通用技能Tag
 	FGameplayTag Ability_Offensive_Inherent_HitReaction;	// 受击反应
@@ -154,6 +156,13 @@ public:
 	// LittleDragon
 	FGameplayTag AbilityEventTag_MeleeCollisionEnabled_Mouth;	// 启用或关闭嘴部DamageBox的碰撞
 	FGameplayTag AbilityEventTag_MeleeCollisionEnabled_Tail;	// 启用或关闭尾部DamageBox的碰撞
+	// BOSS
+	FGameplayTag AbilityEventTag_MeleeCollisionEnabled_LeftHand;	// 启用或关闭左手DamageBox的碰撞
+	FGameplayTag AbilityEventTag_MeleeCollisionEnabled_RightHand;	// 启用或关闭右手DamageBox的碰撞
+	FGameplayTag AbilityEventTag_MeleeCollisionEnabled_Weapon;		// 启用或关闭武器DamageBox的碰撞
+
+	// 完成阶段切换动画
+	FGameplayTag AbilityEventTag_PhaseSwitchFinished;
 #pragma endregion AbilityEventTag
 
 #pragma region WeaponTag

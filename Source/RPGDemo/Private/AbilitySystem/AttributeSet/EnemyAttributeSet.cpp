@@ -94,6 +94,22 @@ void UEnemyAttributeSet::HandleIncomingDamage(const FEffectProperties& EffectPro
 				IEnemyInterface::Execute_MulticastUpdateHealthBar(EffectProps.TargetAvatarActor, GetHealth(), GetMaxHealth());
 
 			}
+
+			// BOSS阶段切换判定
+			if (EffectProps.TargetAvatarActor->Implements<UBossInterface>())
+			{
+				// 血量低于百分之五十，并且处于一阶段
+				if (GetHealth() <= GetMaxHealth() * 0.5 && 
+					IBossInterface::Execute_GetBossPhase(EffectProps.TargetAvatarActor) == EBossPhase::EBP_Phase1)
+				{
+					// 尝试激活切换到二阶段的能力
+					IBossInterface::Execute_SwitchToPhaseTwoForAbility(EffectProps.TargetAvatarActor);
+					// 切换不同阶段的Buff效果
+					IBossInterface::Execute_SwitchToPhaseTwoForBuff(EffectProps.TargetAvatarActor);
+
+				}
+			}
+
 			// 转换为自定义的GameplayEffectContext
 			const FEnhoneyGameplayEffectContext* EnhoneyEffectContext =
 				static_cast<const FEnhoneyGameplayEffectContext*>(EffectProps.GEContectHandle.Get());

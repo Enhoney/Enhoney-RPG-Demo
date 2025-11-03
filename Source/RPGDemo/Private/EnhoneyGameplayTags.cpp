@@ -117,6 +117,8 @@ void FEnhoneyGameplayTags::InitializeGameplayTags()
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.LittleDragon.FrostBall"), FString("Inherent Offensive Ability for LittleDragon FrostBall"));
 	EnhoneyGameplayTags.Ability_Offensive_Inherent_LittleDragon_Melee =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.LittleDragon.Melee"), FString("Inherent Offensive Ability for LittleDragon Melee"));
+	EnhoneyGameplayTags.Ability_Offensive_Inherent_Common_SwitchPhase = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.Common.SwitchPhase"), FString("Inherent Offensive Ability for Boss Common Switch Phase"));
 	
 
 	// 受击反应
@@ -199,6 +201,17 @@ void FEnhoneyGameplayTags::InitializeGameplayTags()
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.MeleeCollisionEnabled.Mouth"), FString("AbilityEventTag Mouth Melee Collision Enabled"));
 	EnhoneyGameplayTags.AbilityEventTag_MeleeCollisionEnabled_Tail =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.MeleeCollisionEnabled.Tail"), FString("AbilityEventTag Tail Melee Collision Enabled"));
+	EnhoneyGameplayTags.AbilityEventTag_MeleeCollisionEnabled_LeftHand = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.MeleeCollisionEnabled.LeftHand"), FString("AbilityEventTag LeftHand Melee Collision Enabled"));
+	EnhoneyGameplayTags.AbilityEventTag_MeleeCollisionEnabled_RightHand =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.MeleeCollisionEnabled.RightHand"), FString("AbilityEventTag RightHand Melee Collision Enabled"));
+	EnhoneyGameplayTags.AbilityEventTag_MeleeCollisionEnabled_Weapon =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.MeleeCollisionEnabled.Weapon"), FString("AbilityEventTag Weapon Melee Collision Enabled"));
+
+	// 阶段切换完成，通知换色/装备武器
+	EnhoneyGameplayTags.AbilityEventTag_PhaseSwitchFinished =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AbilityEventTag.PhaseSwitchFinished"), FString("AbilityEventTag PhaseSwitchFinished"));
+
 	
 #pragma endregion AbilityEventTag
 
