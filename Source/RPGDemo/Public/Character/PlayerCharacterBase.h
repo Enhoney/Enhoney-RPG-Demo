@@ -50,6 +50,7 @@ public:
 	virtual bool IsCharacterAlive_Implementation() const override;
 	virtual void CharacterDie_Implementation() override;
 	virtual FVector GetFireSocketLocation_Implementation(FName FireSocketName) override;
+	virtual FRotator GetFireSocketRotation_Implementation(FName FireSocketName) override;
 
 	virtual void PlayHitReactionAnim_Implementation(const FHitResult& ImpactResult) override;
 

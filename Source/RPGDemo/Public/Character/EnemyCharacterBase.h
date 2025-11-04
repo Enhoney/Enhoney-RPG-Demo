@@ -81,6 +81,7 @@ public:
 	virtual bool IsCharacterAlive_Implementation() const override;
 	virtual void CharacterDie_Implementation() override;
 	virtual FVector GetFireSocketLocation_Implementation(FName FireSocketName) override;
+	virtual FRotator GetFireSocketRotation_Implementation(FName FireSocketName) override;
 
 	virtual void PlayHitReactionAnim_Implementation(const FHitResult& ImpactResult) override;
 	virtual FOnActorDeathSignature& GetOnActorDeathDelegate() override;
@@ -106,6 +107,7 @@ public:
 
 	virtual FCancelEnemyLockOnEnemyDiedSignature* GetCancelEnemyLockOnEnemyDiedDelegate() override;
 	virtual USceneComponent* GetTargetingComponent_Implementation() override;
+	virtual FGameplayTag GetEnemyTypeTag_Implementation() const;
 	/** Enemy Interface End*/
 
 	UEnemyAttributeSet* GetEnemyAttributeSet() const;

@@ -99,6 +99,10 @@ public:
 	FGameplayTag Ability_Offensive_Inherent_LittleDragon_Melee;
 	// Boss技能
 	FGameplayTag Ability_Offensive_Inherent_Common_SwitchPhase;		// 切换到二阶段
+	FGameplayTag Ability_Offensive_Inherent_Common_Sarcasm;			// 嘲讽
+	FGameplayTag Ability_Offensive_Inherent_Berserker_Attack;		// 战狂攻击
+	FGameplayTag Ability_Offensive_Inherent_GiantDragon_Melee;		// 巨龙近战
+	FGameplayTag Ability_Offensive_Inherent_GiantDragon_Remote;		// 巨龙远程攻击
 
 	// 通用技能Tag
 	FGameplayTag Ability_Offensive_Inherent_HitReaction;	// 受击反应
@@ -164,6 +168,10 @@ public:
 	// 完成阶段切换动画
 	FGameplayTag AbilityEventTag_PhaseSwitchFinished;
 #pragma endregion AbilityEventTag
+
+#pragma region GameplayCue
+	FGameplayTag GameplayCue_Sarcasm;
+#pragma endregion GameplayCue
 
 #pragma region WeaponTag
 	FGameplayTag Weapon_CurvedKnife;	// 弯刀

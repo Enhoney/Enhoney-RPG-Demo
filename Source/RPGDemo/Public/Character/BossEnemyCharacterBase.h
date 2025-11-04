@@ -35,6 +35,12 @@ public:
 	virtual EBossPhase GetBossPhase_Implementation() const override;
 	virtual void SwitchToPhaseTwoForAbility_Implementation() override;
 	virtual void SwitchToPhaseTwoForBuff_Implementation() override;
+
+	virtual void SwitchToCombatState_Implementation() override;
+	virtual void SwitchToFleeState_Implementation() override;
+	virtual void SwitchToRestState_Implementation() override;
+
+	virtual FVector GetBirthPointLocation_Implementation() const override;
 	/** Boss Interface End*/
 
 
@@ -79,7 +85,7 @@ protected:
 	// 二阶段的Buff
 	UPROPERTY(EditDefaultsOnly, Category = "BossPhase")
 	TSubclassOf<UGameplayEffect> BuffOnPhase2;
-	// Buff的Spec，用于
+	// Buff的Spec
 	UPROPERTY()
 	FActiveGameplayEffectHandle PhaseBuffHandle;
 
@@ -87,7 +93,19 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BossName")
 	FName BossName = TEXT("BOSS");
 
+	// 快速恢复生命的Buff
+	UPROPERTY(EditDefaultsOnly, Category = "BossPhase")
+	TSubclassOf<UGameplayEffect> QuickRecoveryHealthBuff;
 
+	// 快速恢复生命的Buff--从逃跑状态切换回休息状态时施加
+	UPROPERTY()
+	FActiveGameplayEffectHandle QuickRecoveryHealthBuffHandle;
+	// 常态下的最大移动速度
+	UPROPERTY(EditDefaultsOnly, Category = "MoveSpeed|Common")
+	float MaxSpeed_Commom = 350.f;
+	// 逃跑时的移动速度
+	UPROPERTY(EditDefaultsOnly, Category = "MoveSpeed|Common")
+	float MaxSpeed_Flee = 500.f;
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "ScopeOfInvasion")
 	TObjectPtr<USphereComponent> InvaderSphereCollision;

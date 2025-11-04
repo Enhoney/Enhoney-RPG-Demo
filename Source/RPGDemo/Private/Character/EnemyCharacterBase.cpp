@@ -163,6 +163,11 @@ FVector AEnemyCharacterBase::GetFireSocketLocation_Implementation(FName FireSock
 	return GetMesh()->GetSocketLocation(FireSocketName);
 }
 
+FRotator AEnemyCharacterBase::GetFireSocketRotation_Implementation(FName FireSocketName)
+{
+	return GetMesh()->GetSocketRotation(FireSocketName);
+}
+
 void AEnemyCharacterBase::PlayHitReactionAnim_Implementation(const FHitResult& ImpactResult)
 {
 	// 播放受击动画
@@ -307,6 +312,11 @@ USceneComponent* AEnemyCharacterBase::GetTargetingComponent_Implementation()
 	{
 		return GetRootComponent();
 	}
+}
+
+FGameplayTag AEnemyCharacterBase::GetEnemyTypeTag_Implementation() const
+{
+	return EnemyTypeTag;
 }
 
 UEnemyAttributeSet* AEnemyCharacterBase::GetEnemyAttributeSet() const

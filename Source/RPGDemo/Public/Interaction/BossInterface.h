@@ -47,6 +47,18 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SwitchToPhaseTwoVisual();
 
+	// 切换到战斗状态
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SwitchToCombatState();
+
+	// 切换到逃跑状态
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SwitchToFleeState();
+
+	// 切换到休息状态
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SwitchToRestState();
+
 	// 战斗
 	// 设置近战攻击的DamageBox的Collision
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WeaponSystem")
@@ -54,4 +66,8 @@ public:
 	// 设置武器攻击的DamageBox的Collision--战狂专用，巨龙没有武器，都是用嘴攻击
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WeaponSystem")
 	void SetWeaponCollisionEnabled(bool bIsEnabled);
+
+	// 获取出生点的位置
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WeaponSystem")
+	FVector GetBirthPointLocation() const;
 };

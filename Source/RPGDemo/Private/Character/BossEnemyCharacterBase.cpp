@@ -13,6 +13,7 @@
 #include "CommonAlgorithmLibrary.h"
 #include "EnemyAttributeSet.h"
 #include "EnhoneyAbilitySystemComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 ABossEnemyCharacterBase::ABossEnemyCharacterBase()
@@ -29,6 +30,9 @@ ABossEnemyCharacterBase::ABossEnemyCharacterBase()
 
 	// BOSS默认是休憩状态
 	EnemyState = EEnemyState::EES_Rest;
+
+	// 设置常态移动速度
+	GetCharacterMovement()->MaxWalkSpeed = MaxSpeed_Commom;
 }
 
 void ABossEnemyCharacterBase::MulticastSetBossHealthBarVisibility_Implementation(ACharacter* InPlayerCharacter, bool bIsVisiblie)
@@ -96,6 +100,59 @@ void ABossEnemyCharacterBase::SwitchToPhaseTwoForBuff_Implementation()
 	}
 }
 
+void ABossEnemyCharacterBase::SwitchToCombatState_Implementation()
+{
+	if (EnemyState == EEnemyState::EES_Rest)
+	{
+		// 如果原来是休息状态，就移除恢复生命的Buff
+		if (IsValid(EnemyAbilitySystemComponent) && QuickRecoveryHealthBuffHandle.IsValid())
+		{
+			EnemyAbilitySystemComponent->RemoveActiveGameplayEffect(QuickRecoveryHealthBuffHandle);
+			QuickRecoveryHealthBuffHandle = FActiveGameplayEffectHandle();
+		}
+	}
+
+	EnemyState = EEnemyState::EES_Combat;
+}
+
+void ABossEnemyCharacterBase::SwitchToFleeState_Implementation()
+{
+	// 加速
+	GetCharacterMovement()->MaxWalkSpeed = MaxSpeed_Flee;
+
+	EnemyState = EEnemyState::EES_Flee;
+}
+
+void ABossEnemyCharacterBase::SwitchToRestState_Implementation()
+{
+	if (EnemyState == EEnemyState::EES_Flee)
+	{
+		// 如果原来是逃跑状态，就降低移动速度
+		GetCharacterMovement()->MaxWalkSpeed = MaxSpeed_Commom;
+
+		// 移除原来的恢复生命效果
+		if (IsValid(EnemyAbilitySystemComponent) && QuickRecoveryHealthBuffHandle.IsValid())
+		{
+			EnemyAbilitySystemComponent->RemoveActiveGameplayEffect(QuickRecoveryHealthBuffHandle);
+			QuickRecoveryHealthBuffHandle = FActiveGameplayEffectHandle();
+		}
+
+		// 施加快速恢复生命的Buff--每秒恢复500点
+		FGameplayEffectContextHandle RecoveryHealthBuffEffectHandle = EnemyAbilitySystemComponent->MakeEffectContext();
+		RecoveryHealthBuffEffectHandle.AddSourceObject(this);
+		FGameplayEffectSpecHandle RecoveryHealthBuffEffectSpecHandle = EnemyAbilitySystemComponent->MakeOutgoingSpec(QuickRecoveryHealthBuff, 1, RecoveryHealthBuffEffectHandle);
+		QuickRecoveryHealthBuffHandle = EnemyAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*RecoveryHealthBuffEffectSpecHandle.Data);
+
+		// 切换到休息状态
+		EnemyState = EEnemyState::EES_Rest;
+	}
+}
+
+FVector ABossEnemyCharacterBase::GetBirthPointLocation_Implementation() const
+{
+	return BirthPoint.IsValid() ? BirthPoint->GetActorLocation() : GetActorLocation();
+}
+
 void ABossEnemyCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -120,7 +177,7 @@ void ABossEnemyCharacterBase::OnPlayerCharacterStartInvade(UPrimitiveComponent* 
 			// 如果这个时候处于待机状态，就切换到战斗状态，并将这个入侵者设为战斗目标
 			if (EnemyState == EEnemyState::EES_Rest)
 			{
-				EnemyState = EEnemyState::EES_Combat;
+				IBossInterface::Execute_SwitchToCombatState(this);
 				CombatTarget = InvaderEnter;
 			}
 		}
@@ -173,7 +230,7 @@ void ABossEnemyCharacterBase::FindNextInvaderAsTarget()
 	if (Invaders.IsEmpty())
 	{
 		CombatTarget = nullptr;
-		EnemyState = EEnemyState::EES_Flee;
+		IBossInterface::Execute_SwitchToFleeState(this);
 	}
 	else
 	{

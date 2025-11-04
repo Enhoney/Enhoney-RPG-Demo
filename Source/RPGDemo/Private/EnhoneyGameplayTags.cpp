@@ -119,7 +119,16 @@ void FEnhoneyGameplayTags::InitializeGameplayTags()
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.LittleDragon.Melee"), FString("Inherent Offensive Ability for LittleDragon Melee"));
 	EnhoneyGameplayTags.Ability_Offensive_Inherent_Common_SwitchPhase = 
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.Common.SwitchPhase"), FString("Inherent Offensive Ability for Boss Common Switch Phase"));
-	
+	EnhoneyGameplayTags.Ability_Offensive_Inherent_Common_Sarcasm = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.Common.Sarcasm"), FString("Inherent Offensive Ability for Boss Sarcasm"));
+
+	EnhoneyGameplayTags.Ability_Offensive_Inherent_Berserker_Attack =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.Berserker.Attack"), FString("Inherent Offensive Ability for Berserker Attack"));
+	EnhoneyGameplayTags.Ability_Offensive_Inherent_GiantDragon_Melee =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.GiantDragon.Melee"), FString("Inherent Offensive Ability for GiantDragon Melee"));
+	EnhoneyGameplayTags.Ability_Offensive_Inherent_GiantDragon_Remote =
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Offensive.Inherent.GiantDragon.Remote"), FString("Inherent Offensive Ability for GiantDragon Remote"));
+
 
 	// 受击反应
 	EnhoneyGameplayTags.Ability_Offensive_Inherent_HitReaction =
@@ -215,7 +224,10 @@ void FEnhoneyGameplayTags::InitializeGameplayTags()
 	
 #pragma endregion AbilityEventTag
 
-
+#pragma region GameplayCue
+	EnhoneyGameplayTags.GameplayCue_Sarcasm = 
+		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("GameplayCue.Sarcasm"), FString("GameplayCue Sarcasm"));
+#pragma endregion GameplayCue
 #pragma region WeaponTag
 	EnhoneyGameplayTags.Weapon_CurvedKnife =
 		UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Weapon.CurvedKnife"), FString("CurvedKnife"));

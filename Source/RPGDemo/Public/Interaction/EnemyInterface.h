@@ -100,4 +100,8 @@ public:
 	USceneComponent* GetTargetingComponent();
 
 	virtual FCancelEnemyLockOnEnemyDiedSignature* GetCancelEnemyLockOnEnemyDiedDelegate();
+
+	// 获取敌人类型
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	FGameplayTag GetEnemyTypeTag() const;
 };

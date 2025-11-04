@@ -37,6 +37,9 @@ public:
 	// 获取开火的位置
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FVector GetFireSocketLocation(FName FireSocketName);
+	// 获取SocketRotation
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	FRotator GetFireSocketRotation(FName FireSocketName);
 
 	// 播放受击动画
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)

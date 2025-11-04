@@ -434,6 +434,11 @@ FVector APlayerCharacterBase::GetFireSocketLocation_Implementation(FName FireSoc
 	return GetMesh()->GetSocketLocation(FireSocketName);
 }
 
+FRotator APlayerCharacterBase::GetFireSocketRotation_Implementation(FName FireSocketName)
+{
+	return GetMesh()->GetSocketRotation(FireSocketName);;
+}
+
 void APlayerCharacterBase::PlayHitReactionAnim_Implementation(const FHitResult& ImpactResult)
 {
 	if (!PlayerHitReactionMontages.IsEmpty())
